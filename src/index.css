@@ -1,0 +1,323 @@
+@import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+[data-theme='light'] {
+  --bg-primary: #f5f5fa;
+  --bg-secondary: #ffffff;
+  --bg-card: #ededf5;
+  --accent: #a855f7;
+  --text-primary: #1a1a2e;
+  --text-muted: #888;
+}
+
+[data-theme='dark'] {
+  --bg-primary: #0f0f13;
+  --bg-secondary: #1a1a24;
+  --bg-card: #22223a;
+  --accent: #a855f7;
+  --text-primary: #f0f0f0;
+  --text-muted: #888;
+}
+
+[data-theme='sakura'] {
+  --bg-primary: #fff0f5;
+  --bg-secondary: #fff8fb;
+  --bg-card: #fce4ec;
+  --accent: #e91e8c;
+  --text-primary: #3d0026;
+  --text-muted: #b07090;
+}
+
+[data-theme='cosmic'] {
+  --bg-primary: #0d0520;
+  --bg-secondary: #130a2e;
+  --bg-card: #1e1245;
+  --accent: #38bdf8;
+  --text-primary: #e8e0ff;
+  --text-muted: #7060a0;
+}
+
+:root {
+  --nav-height: 60px;
+  --sidebar-width: 280px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  height: var(--nav-height);
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.app-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #a855f7, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.app-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 24px;
+  overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+}
+
+.sidebar h2 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.game-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.game-filter-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-align: left;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+
+.game-filter-btn:hover {
+  opacity: 0.8;
+}
+
+.calendar-container {
+  flex: 1;
+  padding: 24px;
+  overflow: auto;
+}
+
+.rbc-calendar {
+  background-color: var(--bg-secondary) ;
+  color: var(--text-primary) ;
+}
+
+.rbc-header {
+  background-color: var(--bg-card) ;
+  color: var(--text-primary) ;
+  border-color: var(--bg-card) ;
+}
+
+.rbc-month-view, .rbc-time-view {
+  border-color: var(--bg-card) ;
+}
+
+.rbc-day-bg + .rbc-day-bg,
+.rbc-month-row + .rbc-month-row {
+  border-color: var(--bg-card) ;
+}
+
+.rbc-off-range-bg {
+  background-color: var(--bg-primary) ;
+}
+
+.rbc-off-range {
+  color: var(--text-muted) ;
+}
+
+.rbc-today {
+  background-color: var(--bg-card) ;
+}
+
+.rbc-toolbar button {
+  color: var(--text-primary) ;
+  border-color: var(--bg-card) ;
+  background: var(--bg-card) ;
+}
+
+.rbc-toolbar button:hover,
+.rbc-toolbar button.rbc-active {
+  background-color: var(--accent) ;
+  color: white ;
+  border-color: var(--accent) ;
+}
+
+.rbc-date-cell {
+  color: var(--text-primary) ;
+}
+
+.rbc-show-more {
+  color: var(--accent) ;
+  background: transparent ;
+}
+
+.upcoming-events {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upcoming-event-item {
+  background-color: var(--bg-card);
+  border-radius: 6px;
+  padding: 10px 12px;
+  border-left: 3px solid;
+  font-size: 0.8rem;
+}
+
+.upcoming-event-item .event-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: var(--text-primary);
+}
+
+.upcoming-event-item .event-date {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.theme-dropdown {
+  margin-left: auto;
+  position: relative;
+}
+
+.theme-dropdown-btn {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--bg-card);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.theme-dropdown-btn:hover {
+  opacity: 0.8;
+}
+
+.theme-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: var(--bg-secondary);
+  border: 1px solid var(--bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 200;
+  min-width: 140px;
+}
+
+.theme-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.theme-dropdown-item:hover {
+  background: var(--bg-card);
+}
+
+.theme-dropdown-item.active {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.rbc-month-view {
+  border: 1px solid var(--bg-card) ;
+  background-color: var(--bg-secondary) ;
+}
+
+.rbc-month-row {
+  border-top: 1px solid var(--bg-card) ;
+}
+
+.rbc-day-bg {
+  background-color: var(--bg-secondary) ;
+}
+
+.rbc-off-range-bg {
+  background-color: var(--bg-primary) ;
+}
+
+.rbc-header {
+  border-bottom: 1px solid var(--bg-card) ;
+  border-left: 1px solid var(--bg-card) ;
+  background-color: var(--bg-card) ;
+  color: var(--text-primary) ;
+}
+
+.rbc-today {
+  background-color: var(--bg-card) ;
+}
+
+.rbc-toolbar button {
+  color: var(--text-primary) ;
+  background-color: var(--bg-card) ;
+  border: 1px solid var(--bg-card) ;
+}
+
+.rbc-toolbar button:hover,
+.rbc-toolbar button.rbc-active {
+  background-color: var(--accent) ;
+  color: white ;
+  border-color: var(--accent) ;
+}
+
+.rbc-date-cell > a {
+  color: var(--text-primary) ;
+}
+
+.rbc-off-range > a {
+  color: var(--text-muted) ;
+}
+
+.rbc-show-more {
+  color: var(--accent) ;
+}
