@@ -321,3 +321,64 @@ body {
 .rbc-show-more {
   color: var(--accent) ;
 }
+
+.calendar-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: auto;
+}
+
+.clock {
+  padding: 16px 24px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--bg-card);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.clock-time {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-date {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.clock-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.clock-timezone {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background-color: var(--bg-card);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.clock-toggle {
+  font-size: 0.8rem;
+  color: var(--accent);
+  background-color: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.clock-toggle:hover {
+  background-color: var(--accent);
+  color: white;
+}

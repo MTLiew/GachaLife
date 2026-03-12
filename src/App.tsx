@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Sidebar from './components/Sidebar'
 import GachaCalendar from './components/GachaCalendar'
+import Clock from './components/Clock'
 import type { GachaEvent } from './types'
 import ThemeDropdown from './components/ThemeDropdown'
 import './index.css'
@@ -55,7 +56,10 @@ function App() {
           onToggle={handleToggle}
           events={DUMMY_EVENTS}
         />
-        <GachaCalendar events={DUMMY_EVENTS} selectedGames={selectedGames} />
+        <div className="calendar-wrapper">
+          <Clock />
+          <GachaCalendar events={DUMMY_EVENTS} selectedGames={selectedGames} />
+        </div>
       </main>
     </div>
   )

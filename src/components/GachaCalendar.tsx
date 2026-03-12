@@ -3,6 +3,8 @@ import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import type { GachaEvent, Game } from '../types'
 import { GAMES } from '../games'
+import type { View } from 'react-big-calendar'
+import { useState } from 'react'
 
 
 const localizer = dateFnsLocalizer({
@@ -36,6 +38,9 @@ function GachaCalendar({ events, selectedGames }: Props) {
     }
   })
 
+  const [view, setView] = useState<View>('month')
+  const [date, setDate] = useState<Date>(new Date())
+
   return (
     <div className="calendar-container">
       <Calendar
@@ -46,6 +51,11 @@ function GachaCalendar({ events, selectedGames }: Props) {
         titleAccessor="title"
         eventPropGetter={eventStyleGetter}
         style={{ height: 600 }}
+        view={view}
+        date={date}
+        onView={setView}
+        onNavigate={setDate}
+        views={['month', 'week', 'day', 'agenda']}
       />
     </div>
   )
