@@ -22,7 +22,7 @@ type Props = {
 
 function GachaCalendar({ events, selectedGames }: Props) {
   const filteredEvents = selectedGames.length === 0
-    ? events
+    ? []
     : events.filter(e => selectedGames.includes(e.game))
 
   const gameColorMap = Object.fromEntries(

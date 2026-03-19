@@ -1,40 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import GachaCalendar from './components/GachaCalendar'
+import ThemeDropdown from './components/ThemeDropdown'
 import Clock from './components/Clock'
 import type { GachaEvent } from './types'
-import ThemeDropdown from './components/ThemeDropdown'
+import { fetchEvents } from './api/events'
 import './index.css'
 
-const DUMMY_EVENTS: GachaEvent[] = [
-  {
-    id: '1',
-    title: 'Wanderer Rerun Banner',
-    game: 'genshin',
-    start: new Date(2026, 2, 10),
-    end: new Date(2026, 2, 25),
-    type: 'banner',
-  },
-  {
-    id: '2',
-    title: 'Acheron Rerun Banner',
-    game: 'hsr',
-    start: new Date(2026, 2, 5),
-    end: new Date(2026, 2, 26),
-    type: 'banner',
-  },
-  {
-    id: '3',
-    title: 'Hollow Zero Seasonal Event',
-    game: 'zzz',
-    start: new Date(2026, 2, 1),
-    end: new Date(2026, 2, 20),
-    type: 'event',
-  },
-]
-
 function App() {
-  const [selectedGames, setSelectedGames] = useState<string[]>([])
+  const [selectedGames, setSelectedGames] = useState<string[]>(['genshin'])
+  const [events, setEvents] = useState<GachaEvent[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('calendar')
+
+  const handleViewToggle = () => {
+    setViewMode(prev => prev === 'calendar' ? 'timeline' : 'calendar')
+  }
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      setIsLoading(true)
+      try {
+        const genshinEvents = await fetchEvents('genshin')
+        setEvents(genshinEvents)
+      } catch (error) {
+        console.error('Failed to fetch events:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadEvents()
+  }, [])
 
   const handleToggle = (gameId: string) => {
     setSelectedGames(prev =>
@@ -48,17 +45,20 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>Gacha Calendar</h1>
+        <button className="view-toggle-btn" onClick={handleViewToggle}>
+          {viewMode === 'calendar' ? '📅 Timeline' : '📅 Calendar'}
+        </button>
         <ThemeDropdown />
       </header>
       <main className="app-main">
         <Sidebar
           selectedGames={selectedGames}
           onToggle={handleToggle}
-          events={DUMMY_EVENTS}
+          events={events}
         />
         <div className="calendar-wrapper">
           <Clock />
-          <GachaCalendar events={DUMMY_EVENTS} selectedGames={selectedGames} />
+          <GachaCalendar events={events} selectedGames={selectedGames} />
         </div>
       </main>
     </div>

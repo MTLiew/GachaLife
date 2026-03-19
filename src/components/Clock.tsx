@@ -1,8 +1,22 @@
 import { useState, useEffect } from 'react'
 
+const TIMEZONES = [
+  { label: 'UTC', value: 'UTC' },
+  { label: 'New York (EST)', value: 'America/New_York' },
+  { label: 'Los Angeles (PST)', value: 'America/Los_Angeles' },
+  { label: 'London (GMT)', value: 'Europe/London' },
+  { label: 'Paris (CET)', value: 'Europe/Paris' },
+  { label: 'Shanghai (UTC+8)', value: 'Asia/Shanghai' },
+  { label: 'Tokyo (JST)', value: 'Asia/Tokyo' },
+  { label: 'Seoul (KST)', value: 'Asia/Seoul' },
+]
+
 function Clock() {
   const [currentTime, setCurrentTime] = useState<Date>(new Date())
   const [is12Hour, setIs12Hour] = useState<boolean>(true)
+  const [timezone, setTimezone] = useState<string>(
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  )
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -18,6 +32,7 @@ function Clock() {
       minute: '2-digit',
       second: '2-digit',
       hour12: is12Hour,
+      timeZone: timezone,
     })
   }
 
@@ -27,11 +42,8 @@ function Clock() {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
+      timeZone: timezone,
     })
-  }
-
-  const getTimezone = () => {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone
   }
 
   return (
@@ -39,12 +51,22 @@ function Clock() {
       <div className="clock-time">{formatTime(currentTime)}</div>
       <div className="clock-date">{formatDate(currentTime)}</div>
       <div className="clock-footer">
-        <span className="clock-timezone">{getTimezone()}</span>
+        <select
+          className="clock-timezone-select"
+          value={timezone}
+          onChange={e => setTimezone(e.target.value)}
+        >
+          {TIMEZONES.map(tz => (
+            <option key={tz.value} value={tz.value}>
+              {tz.label}
+            </option>
+          ))}
+        </select>
         <button
           className="clock-toggle"
           onClick={() => setIs12Hour(prev => !prev)}
         >
-          {is12Hour ? '24hr' : '12hr'}
+          {is12Hour ? '12hr' : '24hr'}
         </button>
       </div>
     </div>
