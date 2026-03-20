@@ -15,7 +15,7 @@ function Clock() {
   const [currentTime, setCurrentTime] = useState<Date>(new Date())
   const [is12Hour, setIs12Hour] = useState<boolean>(true)
   const [timezone, setTimezone] = useState<string>(
-    Intl.DateTimeFormat().resolvedOptions().timeZone
+    localStorage.getItem('timezone') ?? Intl.DateTimeFormat().resolvedOptions().timeZone
   )
 
   useEffect(() => {
@@ -54,7 +54,10 @@ function Clock() {
         <select
           className="clock-timezone-select"
           value={timezone}
-          onChange={e => setTimezone(e.target.value)}
+          onChange={e => {
+            setTimezone(e.target.value)
+            localStorage.setItem('timezone', e.target.value)
+          }}
         >
           {TIMEZONES.map(tz => (
             <option key={tz.value} value={tz.value}>

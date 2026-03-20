@@ -18,20 +18,32 @@ function App() {
   }
 
   useEffect(() => {
-    const loadEvents = async () => {
-      setIsLoading(true)
-      try {
-        const genshinEvents = await fetchEvents('genshin')
-        setEvents(genshinEvents)
-      } catch (error) {
+  let cancelled = false
+
+  const loadEvents = async () => {
+    setIsLoading(true)
+    try {
+      const results = await Promise.all(selectedGames.map(id => fetchEvents(id)))
+      if (!cancelled) {
+        setEvents(results.flat())
+      }
+    } catch (error) {
+      if (!cancelled) {
         console.error('Failed to fetch events:', error)
-      } finally {
+      }
+    } finally {
+      if (!cancelled) {
         setIsLoading(false)
       }
     }
+  }
 
-    loadEvents()
-  }, [])
+  loadEvents()
+
+  return () => {
+    cancelled = true
+  }
+}, [selectedGames])
 
   const handleToggle = (gameId: string) => {
     setSelectedGames(prev =>
@@ -58,7 +70,15 @@ function App() {
         />
         <div className="calendar-wrapper">
           <Clock />
-          <GachaCalendar events={events} selectedGames={selectedGames} />
+          <div className="calendar-area">
+            {isLoading && (
+              <div className="loading-overlay">
+                <div className="loading-spinner" />
+                <p className="loading-text">Fetching events...</p>
+              </div>
+            )}
+            <GachaCalendar events={events} selectedGames={selectedGames} />
+          </div>
         </div>
       </main>
     </div>
