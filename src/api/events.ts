@@ -17,3 +17,12 @@ export async function fetchEvents(gameId: string): Promise<GachaEvent[]> {
     url: e.url,
   }))
 }
+
+export async function fetchStatus(): Promise<Record<string, {
+  last_updated: string | null
+  event_count: number | null
+  cached: boolean
+}>> {
+  const response = await axios.get(`${BASE_URL}/status`)
+  return response.data
+}
