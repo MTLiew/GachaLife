@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import GachaCalendar from './components/GachaCalendar'
 import Clock from './components/Clock'
+import GachaTimeline from './components/GachaTimeline'
 import type { GachaEvent } from './types'
 import { fetchEvents } from './api/events'
 import './index.css'
@@ -11,6 +12,7 @@ function App() {
   const [events, setEvents] = useState<GachaEvent[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('calendar')
+  const [maintenanceGames, setMaintenanceGames] = useState<string[]>([])
 
   const handleViewToggle = () => {
     setViewMode(prev => prev === 'calendar' ? 'timeline' : 'calendar')
@@ -22,18 +24,32 @@ function App() {
     const loadEvents = async () => {
       setIsLoading(true)
       try {
-        const results = await Promise.all(selectedGames.map(id => fetchEvents(id)))
+        const results = await Promise.allSettled(
+          selectedGames.map(id => fetchEvents(id))
+        )
         if (!cancelled) {
-          setEvents(results.flat())
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error('Failed to fetch events:', error)
+          const newMaintenance: string[] = []
+          const allEvents: GachaEvent[] = []
+
+          results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+              allEvents.push(...result.value)
+            } else {
+              newMaintenance.push(selectedGames[index])
+            }
+          })
+
+          setEvents(allEvents)
+          setMaintenanceGames(prev => {
+            const updated = [...prev]
+            newMaintenance.forEach(id => {
+              if (!updated.includes(id)) updated.push(id)
+            })
+            return updated
+          })
         }
       } finally {
-        if (!cancelled) {
-          setIsLoading(false)
-        }
+        if (!cancelled) setIsLoading(false)
       }
     }
 
@@ -58,6 +74,7 @@ function App() {
         selectedGames={selectedGames}
         onToggle={handleToggle}
         events={events}
+        maintenanceGames={maintenanceGames}
       />
       <div className="calendar-wrapper">
         <Clock />
@@ -73,7 +90,16 @@ function App() {
               <p className="loading-text">Fetching events...</p>
             </div>
           )}
-          <GachaCalendar events={events} selectedGames={selectedGames} />
+          {viewMode === 'calendar'
+            ? <GachaCalendar events={events} selectedGames={selectedGames} />
+            : (
+              <div className="timeline-page">
+                <div className="timeline-side" />
+                <GachaTimeline events={events} selectedGames={selectedGames} />
+                <div className="timeline-side" />
+              </div>
+            )
+          }
         </div>
       </div>
     </div>

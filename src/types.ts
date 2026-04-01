@@ -13,4 +13,5 @@ export type Game = {
   id: string
   name: string
   color: string
+  comingSoon?: boolean
 }

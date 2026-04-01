@@ -6,9 +6,10 @@ type Props = {
   selectedGames: string[]
   onToggle: (gameId: string) => void
   events: GachaEvent[]
+  maintenanceGames: string[]
 }
 
-function Sidebar({ selectedGames, onToggle, events }: Props) {
+function Sidebar({ selectedGames, onToggle, events, maintenanceGames }: Props) {
   const today = new Date()
 
   const upcoming = events
@@ -27,7 +28,7 @@ function Sidebar({ selectedGames, onToggle, events }: Props) {
     <aside className="sidebar">
       <div>
         <h2>Games</h2>
-        <GameFilter selectedGames={selectedGames} onToggle={onToggle} />
+        <GameFilter selectedGames={selectedGames} onToggle={onToggle} maintenanceGames={maintenanceGames}/>
       </div>
       <div>
         <h2>Ending Soon</h2>
