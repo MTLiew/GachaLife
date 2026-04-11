@@ -410,3 +410,16 @@ def get_status():
                 "cached": False,
             }
     return status
+
+@app.get("/debug/playwright")
+def debug_playwright():
+    import subprocess
+    result = subprocess.run(
+        ["python", "-m", "playwright", "install", "--dry-run"],
+        capture_output=True, text=True
+    )
+    return {
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+        "browser_path": os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "not set")
+    }
