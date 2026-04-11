@@ -168,6 +168,15 @@ def parse_hsr(data: list, game_id: str):
     seen = set()
     now = datetime.utcnow()
 
+    # Try parsing dates — handle both formats
+    def try_parse(s):
+        for fmt in ("%Y/%m/%d %H:%M:%S", "%Y/%m/%d %H:%M"):
+            try:
+                return datetime.strptime(s, fmt)
+            except ValueError:
+                continue
+        return None
+
     for item in data:
         name = item.get("name")
         duration = item.get("duration")
@@ -204,15 +213,6 @@ def parse_hsr(data: list, game_id: str):
         end_dt = try_parse(end_str)
         if not end_dt:
             continue
-
-        # Try parsing dates — handle both formats
-        def try_parse(s):
-            for fmt in ("%Y/%m/%d %H:%M:%S", "%Y/%m/%d %H:%M"):
-                try:
-                    return datetime.strptime(s, fmt)
-                except ValueError:
-                    continue
-            return None
 
         start_dt = try_parse(start_str)
         end_dt = try_parse(end_str)
