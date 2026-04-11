@@ -48,17 +48,6 @@ function GachaTimeline({ events, selectedGames }: Props) {
     }
   }
 
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (scrollRef.current) {
-      e.preventDefault()
-      e.stopPropagation()
-      scrollRef.current.scrollLeft += e.deltaY
-      if (headerScrollRef.current) {
-        headerScrollRef.current.scrollLeft = scrollRef.current.scrollLeft
-      }
-    }
-  }
-
   useEffect(() => {
   const el = scrollRef.current
   if (!el) return
