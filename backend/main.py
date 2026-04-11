@@ -77,8 +77,8 @@ def evaluate_with_playwright(url: str, js: str):
                 browser = await p.chromium.launch(headless=True)
                 page = await browser.new_page()
                 try:
-                    await page.goto(url, wait_until="networkidle", timeout=60000)
-                    await page.wait_for_timeout(10000)
+                    await page.goto(url, wait_until="domcontentloaded", timeout=90000)
+                    await page.wait_for_timeout(15000)  # extra wait for JS to render
                     data = await page.evaluate(js)
                 finally:
                     await browser.close()
@@ -95,7 +95,9 @@ def evaluate_with_playwright(url: str, js: str):
 
     thread = threading.Thread(target=run)
     thread.start()
-    thread.join()
+    thread.join(timeout=120)
+    if thread.is_alive():
+        raise TimeoutError("Playwright evaluation timed out")
 
     if "error" in result:
         raise result["error"]
