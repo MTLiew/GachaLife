@@ -1060,30 +1060,6 @@ body {
   border-left: 1px solid var(--bg-card);
 }
 
-.detail-panel-wrapper.collapsed {
-  width: 0px;
-}
-
-.detail-panel-toggle {
-  position: absolute;
-  left: -28px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 28px;
-  height: 48px;
-  background: var(--bg-card);
-  border: 1px solid var(--bg-card);
-  border-right: none;
-  border-radius: 6px 0 0 6px;
-  cursor: pointer;
-  color: var(--text-muted);
-  font-size: 0.7rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
 .detail-panel-toggle:hover {
   color: var(--text-primary);
 }

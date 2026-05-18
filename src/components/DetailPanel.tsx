@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { GachaEvent } from '../types'
 import { GAMES } from '../games'
 
