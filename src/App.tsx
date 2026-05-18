@@ -6,6 +6,7 @@ import GachaTimeline from './components/GachaTimeline'
 import type { GachaEvent } from './types'
 import { fetchEvents } from './api/events'
 import './index.css'
+import DetailPanel from './components/DetailPanel'
 
 function App() {
   const [selectedGames, setSelectedGames] = useState<string[]>(['genshin'])
@@ -13,6 +14,7 @@ function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('calendar')
   const [maintenanceGames, setMaintenanceGames] = useState<string[]>([])
+  const [selectedEvent, setSelectedEvent] = useState<GachaEvent | null>(null)
 
   const handleViewToggle = () => {
     setViewMode(prev => prev === 'calendar' ? 'timeline' : 'calendar')
@@ -95,8 +97,13 @@ function App() {
             : (
               <div className="timeline-page">
                 <div className="timeline-side" />
-                <GachaTimeline events={events} selectedGames={selectedGames} />
-                <div className="timeline-side" />
+                  <GachaTimeline
+                    events={events}
+                    selectedGames={selectedGames}
+                    onEventClick={setSelectedEvent}
+                  />
+                  <div className="timeline-side" />
+                <DetailPanel event={selectedEvent} />
               </div>
             )
           }

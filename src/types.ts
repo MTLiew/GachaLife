@@ -5,7 +5,7 @@ export type GachaEvent = {
   start: Date
   end: Date
   type: 'banner' | 'event' | 'maintenance'
-  engagement?: 'relaxed' | 'casual' | 'focused' | 'challenge'
+  tags?: string[]
   url?: string
 }
 

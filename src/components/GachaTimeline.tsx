@@ -5,6 +5,7 @@ import { GAMES } from '../games'
 type Props = {
   events: GachaEvent[]
   selectedGames: string[]
+  onEventClick: (event: GachaEvent) => void
 }
 
 const LABEL_WIDTH = 150
@@ -16,7 +17,7 @@ const TOTAL_WEEKS = 9
 const TOTAL_DAYS = TOTAL_WEEKS * 7
 const PAST_DAYS = 28
 
-function GachaTimeline({ events, selectedGames }: Props) {
+function GachaTimeline({ events, selectedGames, onEventClick }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const headerScrollRef = useRef<HTMLDivElement>(null)
 
@@ -166,18 +167,19 @@ function GachaTimeline({ events, selectedGames }: Props) {
 
                         return (
                             <div
-                            key={event.id}
-                            className={`timeline-event-bar ${startsBeforeRange ? 'clipped-left' : ''}`}
-                            style={{
-                                left: startX,
-                                width,
-                                top,
-                                height: ROW_HEIGHT - 6,
-                                backgroundColor: GAMES.find(g => g.id === event.game)?.color ?? '#888',
-                            }}
-                            title={event.title}
+                              key={event.id}
+                              className={`timeline-event-bar ${startsBeforeRange ? 'clipped-left' : ''}`}
+                              style={{
+                                  left: startX,
+                                  width,
+                                  top,
+                                  height: ROW_HEIGHT - 6,
+                                  backgroundColor: GAMES.find(g => g.id === event.game)?.color ?? '#888',
+                              }}
+                              onClick={() => onEventClick(event)}
+                              title={event.title}
                             >
-                            <span className="timeline-event-label">{event.title}</span>
+                              <span className="timeline-event-label">{event.title}</span>
                             </div>
                         )
                         })}
