@@ -11,6 +11,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
+from database import test_connection
 
 app = FastAPI()
 
@@ -425,3 +426,8 @@ def debug_playwright():
         "stderr": result.stderr,
         "browser_path": os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "not set")
     }
+
+@app.get("/debug/db")
+def debug_db():
+    connected = test_connection()
+    return {"connected": connected}
