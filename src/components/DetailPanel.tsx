@@ -34,6 +34,13 @@ const TAG_INFO: Record<string, string> = {
   'Recurring': 'Event that refreshes at regular intervals',
 }
 
+const sortedTags = [...ALL_TAGS].sort((a, b) => {
+  const da = STUB_VOTES[a] ?? { votes: 0, percentage: 0 }
+  const db = STUB_VOTES[b] ?? { votes: 0, percentage: 0 }
+  if (db.percentage !== da.percentage) return db.percentage - da.percentage
+  return db.votes - da.votes
+})
+
 function formatDate(date: Date): string {
   const rounded = new Date(date)
   rounded.setMinutes(0, 0, 0)
@@ -115,7 +122,7 @@ function DetailPanel({ event }: Props) {
                 <h3 className="detail-panel-section-title">Community Tags</h3>
                 <div className="detail-panel-tags">
                   {sortedTags.map(tag => {
-                    const data = STUB_VOTES[tag]
+                    const data = STUB_VOTES[tag] ?? { votes: 0, percentage: 0 }
                     return (
                       <div key={tag} className="detail-panel-tag">
                         <div className="detail-panel-tag-header">
