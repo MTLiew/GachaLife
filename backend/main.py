@@ -8,13 +8,15 @@ import os
 import models
 from html import unescape
 from datetime import datetime, timedelta
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
-from database import test_connection, Base, engine
+from database import test_connection, Base, engine, get_db
 from alembic.config import Config
 from alembic import command
+from sqlalchemy.orm import Session
+import crud
 
 def run_migrations():
     try:
@@ -353,14 +355,21 @@ HSR_JS = """
 """
 
 @app.get("/events/{game_id}")
-async def get_events(game_id: str):
+async def get_events(game_id: str, db: Session = Depends(get_db)):
     if game_id not in SOURCES:
         raise HTTPException(status_code=404, detail=f"Game '{game_id}' not supported")
 
-    cached = get_cached(game_id)
-    if cached is not None:
-        return {"game_id": game_id, "count": len(cached), "events": cached, "cached": True}
+    # Check database first
+    db_events = crud.get_events_from_db(db, game_id)
+    if db_events is not None:
+        return {
+            "game_id": game_id,
+            "count": len(db_events),
+            "events": crud.events_to_dict(db_events),
+            "cached": True
+        }
 
+    # Scrape fresh data
     try:
         if game_id == "hsr":
             raw = evaluate_with_playwright(SOURCES[game_id], HSR_JS)
@@ -371,8 +380,15 @@ async def get_events(game_id: str):
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Failed to fetch events: {str(e)}")
 
-    set_cached(game_id, events)
-    return {"game_id": game_id, "count": len(events), "events": events, "cached": False}
+    # Save to database
+    crud.save_events_to_db(db, game_id, events)
+
+    return {
+        "game_id": game_id,
+        "count": len(events),
+        "events": events,
+        "cached": False
+    }
 
 @app.get("/debug/html/{game_id}")
 async def debug_html(game_id: str):
@@ -410,13 +426,23 @@ async def debug_js_hsr():
         return {"error": str(e)}
 
 @app.get("/status")
-def get_status():
+def get_status(db: Session = Depends(get_db)):
+    from sqlalchemy import select, func
     status = {}
     for game_id in SOURCES:
-        if game_id in cache:
+        sample = db.execute(
+            select(models.Event)
+            .where(models.Event.game == game_id)
+            .limit(1)
+        ).scalar_one_or_none()
+
+        if sample:
+            count = db.execute(
+                select(func.count()).where(models.Event.game == game_id)
+            ).scalar()
             status[game_id] = {
-                "last_updated": cache[game_id]["fetched_at"].isoformat(),
-                "event_count": len(cache[game_id]["events"]),
+                "last_updated": sample.last_scraped.isoformat(),
+                "event_count": count,
                 "cached": True,
             }
         else:
@@ -447,9 +473,13 @@ def debug_db():
 
 @app.get("/debug/db")
 def debug_db():
-    from sqlalchemy import inspect
+    from sqlalchemy import inspect, text
     from database import engine
     connected = test_connection()
-    inspector = inspect(engine)
-    tables = inspector.get_table_names()
+    with engine.connect() as conn:
+        result = conn.execute(text("""
+            SELECT table_name FROM information_schema.tables 
+            WHERE table_schema = 'public'
+        """))
+        tables = [row[0] for row in result]
     return {"connected": connected, "tables": tables}
