@@ -5,7 +5,9 @@ type Props = {
   event: GachaEvent | null
 }
 
-const ALL_TAGS = ['Story', 'Challenge', 'Relaxed', 'Time-Gated'] as const
+const ALL_TAGS = ['Challenge', 'Story', 'Login', 'Login (Limited)', 'Time-Gated', 'Mini-Game',
+  'Casual', 'Relaxed', 'Focused', 'Intense', 'Memento', 'Permanent', 'Permanent (Limited)', 'Recurring'
+] as const
 
 // Stub data — replace with real vote data once auth + database are in
 const STUB_VOTES: Record<string, { votes: number; percentage: number }> = {
@@ -13,6 +15,23 @@ const STUB_VOTES: Record<string, { votes: number; percentage: number }> = {
   'Time-Gated':  { votes: 18, percentage: 60 },
   'Challenge':   { votes: 5,  percentage: 16 },
   'Relaxed':     { votes: 2,  percentage: 6  },
+}
+
+const TAG_INFO: Record<string, string> = {
+  'Challenge': 'Difficult core gameplay intended for end-game players',
+  'Story': 'Extensive dialogue and character appearances',
+  'Login': 'Rewards issued for logging in daily',
+  'Login (Limited)': 'Rewards issued limited by day and not acquirable afterwards',
+  'Time-Gated': 'Requires real-world waiting time',
+  'Mini-Game': 'Centered on alternative gameplay',
+  'Casual': 'Completable in under an hour',
+  'Relaxed': 'Requires little to no effort to complete',
+  'Focused': 'Requires some effort to complete',
+  'Intense': 'Requires significant effort and thinking to complete',
+  'Memento': 'Event-limited items can be acquired',
+  'Permanent': 'Completable in the future',
+  'Permanent (Limited)': 'Completable in the future with time-limited rewards',
+  'Recurring': 'Event that refreshes at regular intervals',
 }
 
 function formatDate(date: Date): string {
@@ -100,7 +119,7 @@ function DetailPanel({ event }: Props) {
                     return (
                       <div key={tag} className="detail-panel-tag">
                         <div className="detail-panel-tag-header">
-                          <span className="detail-panel-tag-label">{tag}</span>
+                          <span className="detail-panel-tag-label" title={TAG_INFO[tag]}>{tag}</span>
                           <span className="detail-panel-tag-votes">{data.votes} votes</span>
                         </div>
                         <div className="detail-panel-tag-bar-bg">
@@ -128,21 +147,12 @@ function DetailPanel({ event }: Props) {
                       key={tag}
                       className="detail-panel-vote-btn"
                       onClick={() => alert('Sign in to vote!')}
+                      title={TAG_INFO[tag]}
                     >
                       {tag}
                     </button>
                   ))}
                 </div>
-                {event.url && (
-                  <a
-                    href={event.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="detail-panel-link"
-                  >
-                    View source
-                  </a>
-                )}
               </div>
             </>
           )}

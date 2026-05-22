@@ -82,7 +82,7 @@ function App() {
         <Clock />
           <div className="calendar-toolbar">
             <button className="view-toggle-btn" onClick={handleViewToggle}>
-              {viewMode === 'calendar' ? '📅 Switch to Timeline' : '📅 Switch to Calendar'}
+              {viewMode === 'calendar' ? 'Switch to Timeline' : 'Switch to Calendar'}
             </button>
           </div>
         <div className="calendar-area">

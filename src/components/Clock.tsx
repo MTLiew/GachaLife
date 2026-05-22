@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 
 const TIMEZONES = [
+  { label: 'System Time', value: Intl.DateTimeFormat().resolvedOptions().timeZone },
   { label: 'UTC', value: 'UTC' },
   { label: 'New York (EST)', value: 'America/New_York' },
   { label: 'Los Angeles (PST)', value: 'America/Los_Angeles' },

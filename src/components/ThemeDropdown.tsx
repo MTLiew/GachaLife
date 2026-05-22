@@ -3,10 +3,10 @@ import { useTheme } from '../context/ThemeContext'
 import type { Theme } from '../context/ThemeContext'
 
 const THEMES: { id: Theme; label: string; icon: string }[] = [
-  { id: 'light', label: 'Light', icon: '☀️' },
-  { id: 'dark', label: 'Dark', icon: '🌙' },
-  { id: 'sakura', label: 'Sakura', icon: '🌸' },
-  { id: 'cosmic', label: 'Cosmic', icon: '🌌' },
+  { id: 'light', label: 'Light', icon: '' },
+  { id: 'dark', label: 'Dark', icon: '' },
+  { id: 'sakura', label: 'Sakura', icon: '' },
+  { id: 'cosmic', label: 'Cosmic', icon: '' },
 ]
 
 function ThemeDropdown() {
