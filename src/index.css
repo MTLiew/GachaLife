@@ -605,7 +605,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.15s ease;
-  align-self: flex-start;
+  align-self: center;
 }
 
 .support-btn:hover {

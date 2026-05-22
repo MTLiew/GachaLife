@@ -12,10 +12,12 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
-from database import test_connection, Base, engine, get_db
+from database import test_connection, Base, engine, get_db, SessionLocal
 from alembic.config import Config
 from alembic import command
 from sqlalchemy.orm import Session
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 import crud
 
 def run_migrations():
@@ -48,6 +50,36 @@ SOURCES = {
     "zzz": "https://zzz.rng.moe/en/timeline",
     "wuwa": "https://wuwatracker.com/timeline",
 }
+
+def scheduled_scrape():
+    """Scrapes all supported games and saves to database."""
+    db = SessionLocal()
+    try:
+        for game_id in SOURCES:
+            try:
+                print(f"Scheduled scrape: {game_id}")
+                if game_id == "hsr":
+                    raw = evaluate_with_playwright(SOURCES[game_id], HSR_JS)
+                    events = parse_hsr(raw, game_id)
+                else:
+                    html = fetch_with_playwright(SOURCES[game_id])
+                    events = parse_events(html, game_id)
+                crud.save_events_to_db(db, game_id, events)
+                print(f"Scheduled scrape complete: {game_id} ({len(events)} events)")
+            except Exception as e:
+                print(f"Scheduled scrape failed for {game_id}: {e}")
+    finally:
+        db.close()
+
+# Start scheduler
+scheduler = BackgroundScheduler()
+scheduler.add_job(
+    scheduled_scrape,
+    CronTrigger(hour="0,6,12,18", minute="0"),  # 00:00, 06:00, 12:00, 18:00 UTC
+    id="scrape_all_games",
+    replace_existing=True,
+)
+scheduler.start()
 
 def fetch_with_playwright(url: str) -> str:
     """Run Playwright in a separate thread with its own event loop to avoid Windows asyncio issues."""

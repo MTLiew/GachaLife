@@ -12,7 +12,7 @@ function App() {
   const [selectedGames, setSelectedGames] = useState<string[]>(['genshin'])
   const [events, setEvents] = useState<GachaEvent[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('calendar')
+  const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('timeline')
   const [maintenanceGames, setMaintenanceGames] = useState<string[]>([])
   const [selectedEvent, setSelectedEvent] = useState<GachaEvent | null>(null)
 
