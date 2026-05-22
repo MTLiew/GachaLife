@@ -34,13 +34,6 @@ const TAG_INFO: Record<string, string> = {
   'Recurring': 'Event that refreshes at regular intervals',
 }
 
-const sortedTags = [...ALL_TAGS].sort((a, b) => {
-  const da = STUB_VOTES[a] ?? { votes: 0, percentage: 0 }
-  const db = STUB_VOTES[b] ?? { votes: 0, percentage: 0 }
-  if (db.percentage !== da.percentage) return db.percentage - da.percentage
-  return db.votes - da.votes
-})
-
 function formatDate(date: Date): string {
   const rounded = new Date(date)
   rounded.setMinutes(0, 0, 0)
@@ -70,11 +63,11 @@ function DetailPanel({ event }: Props) {
   const game = GAMES.find(g => g.id === event?.game)
 
   const sortedTags = [...ALL_TAGS].sort((a, b) => {
-    const da = STUB_VOTES[a]
-    const db = STUB_VOTES[b]
+    const da = STUB_VOTES[a] ?? { votes: 0, percentage: 0 }
+    const db = STUB_VOTES[b] ?? { votes: 0, percentage: 0 }
     if (db.percentage !== da.percentage) return db.percentage - da.percentage
     return db.votes - da.votes
-    })
+  })
 
   return (
     <div className={`detail-panel-wrapper`}>
@@ -153,7 +146,7 @@ function DetailPanel({ event }: Props) {
                     <button
                       key={tag}
                       className="detail-panel-vote-btn"
-                      onClick={() => alert('Sign in to vote!')}
+                      onClick={() => console.log('Sign in to vote!')}
                       title={TAG_INFO[tag]}
                     >
                       {tag}
