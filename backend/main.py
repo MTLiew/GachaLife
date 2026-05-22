@@ -5,6 +5,7 @@ import requests
 import json
 import re
 import os
+import models
 from html import unescape
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException
@@ -12,6 +13,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 from database import test_connection, Base, engine
+from alembic.config import Config
+from alembic import command
+
+def run_migrations():
+    try:
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+        print("Migrations applied successfully")
+    except Exception as e:
+        print(f"Migration error: {e}")
+
+run_migrations()
 
 app = FastAPI()
 
