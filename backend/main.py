@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
-from database import test_connection
+from database import test_connection, Base, engine
 
 app = FastAPI()
 
@@ -431,3 +431,12 @@ def debug_playwright():
 def debug_db():
     connected = test_connection()
     return {"connected": connected}
+
+@app.get("/debug/db")
+def debug_db():
+    from sqlalchemy import inspect
+    from database import engine
+    connected = test_connection()
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
+    return {"connected": connected, "tables": tables}
