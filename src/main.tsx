@@ -14,6 +14,9 @@ const domain = import.meta.env.VITE_AUTH0_DOMAIN
 const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID
 const audience = import.meta.env.VITE_AUTH0_AUDIENCE
 
+console.log('Auth0 Domain:', import.meta.env.VITE_AUTH0_DOMAIN)
+console.log('Auth0 Client ID:', import.meta.env.VITE_AUTH0_CLIENT_ID)
+
 function Root() {
   return (
     <Layout>
