@@ -8,6 +8,11 @@ import Games from './pages/Games'
 import Changelog from './pages/Changelog'
 import Support from './pages/Support'
 import './index.css'
+import { Auth0Provider } from '@auth0/auth0-react'
+
+const domain = import.meta.env.VITE_AUTH0_DOMAIN
+const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID
+const audience = import.meta.env.VITE_AUTH0_AUDIENCE
 
 function Root() {
   return (
@@ -25,10 +30,20 @@ function Root() {
 document.documentElement.setAttribute('data-theme', 'light')
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider>
-      <BrowserRouter>
-        <Root />
-      </BrowserRouter>
-    </ThemeProvider>
+    <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      authorizationParams={{
+        redirect_uri: window.location.origin,
+        audience: audience,
+        scope: 'openid profile email'
+      }}
+    >
+      <ThemeProvider>
+        <BrowserRouter>
+          <Root />
+        </BrowserRouter>
+      </ThemeProvider>
+    </Auth0Provider>
   </StrictMode>
 )
