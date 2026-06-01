@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+import { useAuth0 } from '@auth0/auth0-react'
 import type { GachaEvent } from '../types'
 import { GAMES } from '../games'
 
@@ -5,17 +7,11 @@ type Props = {
   event: GachaEvent | null
 }
 
-const ALL_TAGS = ['Challenge', 'Story', 'Login', 'Login (Limited)', 'Time-Gated', 'Mini-Game',
-  'Casual', 'Relaxed', 'Focused', 'Intense', 'Memento', 'Permanent', 'Permanent (Limited)', 'Recurring'
+const ALL_TAGS = [
+  'Challenge', 'Story', 'Login', 'Login (Limited)', 'Time-Gated', 'Mini-Game',
+  'Casual', 'Relaxed', 'Focused', 'Intense', 'Memento', 'Permanent',
+  'Permanent (Limited)', 'Recurring'
 ] as const
-
-// Stub data — replace with real vote data once auth + database are in
-const STUB_VOTES: Record<string, { votes: number; percentage: number }> = {
-  'Story':       { votes: 24, percentage: 78 },
-  'Time-Gated':  { votes: 18, percentage: 60 },
-  'Challenge':   { votes: 5,  percentage: 16 },
-  'Relaxed':     { votes: 2,  percentage: 6  },
-}
 
 const TAG_INFO: Record<string, string> = {
   'Challenge': 'Difficult core gameplay intended for end-game players',
@@ -37,15 +33,11 @@ const TAG_INFO: Record<string, string> = {
 function formatDate(date: Date): string {
   const rounded = new Date(date)
   rounded.setMinutes(0, 0, 0)
-  const timezone = localStorage.getItem('timezone') 
+  const timezone = localStorage.getItem('timezone')
     ?? Intl.DateTimeFormat().resolvedOptions().timeZone
   return rounded.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: timezone,
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZone: timezone,
   })
 }
 
@@ -61,102 +53,183 @@ function getDaysRemaining(end: Date): string {
 
 function DetailPanel({ event }: Props) {
   const game = GAMES.find(g => g.id === event?.game)
+  const { isAuthenticated, getAccessTokenSilently, loginWithRedirect } = useAuth0()
+
+  const [votes, setVotes] = useState<Record<string, number>>({})
+  const [userVotes, setUserVotes] = useState<Set<string>>(new Set())
+  const [votesLoading, setVotesLoading] = useState(false)
+  const [pendingTag, setPendingTag] = useState<string | null>(null)
+
+  // Fetch votes whenever the selected event changes
+  useEffect(() => {
+    if (!event) {
+      setVotes({})
+      setUserVotes(new Set())
+      return
+    }
+
+    const fetchVotes = async () => {
+      setVotesLoading(true)
+      try {
+        const headers: Record<string, string> = {}
+        if (isAuthenticated) {
+          const token = await getAccessTokenSilently()
+          headers['Authorization'] = `Bearer ${token}`
+        }
+
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/events/${encodeURIComponent(event.id)}/votes`,
+          { headers }
+        )
+        if (!res.ok) return
+        const data = await res.json()
+        setVotes(data.votes)
+        setUserVotes(new Set(data.user_votes))
+      } catch (err) {
+        console.error('Failed to fetch votes:', err)
+      } finally {
+        setVotesLoading(false)
+      }
+    }
+
+    fetchVotes()
+  }, [event?.id, isAuthenticated])
+
+  const handleVote = async (tag: string) => {
+    if (!isAuthenticated) {
+      loginWithRedirect()
+      return
+    }
+    if (!event || pendingTag) return
+
+    setPendingTag(tag)
+    try {
+      const token = await getAccessTokenSilently()
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/votes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ event_id: event.id, tag }),
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      setVotes(data.votes)
+      setUserVotes(new Set(data.user_votes))
+    } catch (err) {
+      console.error('Failed to cast vote:', err)
+    } finally {
+      setPendingTag(null)
+    }
+  }
+
+  const totalVotes = Object.values(votes).reduce((sum, n) => sum + n, 0)
 
   const sortedTags = [...ALL_TAGS].sort((a, b) => {
-    const da = STUB_VOTES[a] ?? { votes: 0, percentage: 0 }
-    const db = STUB_VOTES[b] ?? { votes: 0, percentage: 0 }
-    if (db.percentage !== da.percentage) return db.percentage - da.percentage
-    return db.votes - da.votes
+    const va = votes[a] ?? 0
+    const vb = votes[b] ?? 0
+    return vb - va
   })
 
   return (
-    <div className={`detail-panel-wrapper`}>
-      {/* Panel content */}
-        <div className="detail-panel">
-          {event === null ? (
-            <div className="detail-panel-empty">
-              <p>Click an event to see details</p>
+    <div className="detail-panel-wrapper">
+      <div className="detail-panel">
+        {event === null ? (
+          <div className="detail-panel-empty">
+            <p>Click an event to see details</p>
+          </div>
+        ) : (
+          <>
+            {/* Banner */}
+            <div
+              className="detail-panel-banner"
+              style={{
+                background: `linear-gradient(135deg, ${game?.color ?? '#888'}99, ${game?.color ?? '#888'}22)`,
+              }}
+            >
+              <div className="detail-panel-banner-overlay">
+                <span className="detail-panel-game-name">{game?.name ?? event.game}</span>
+                <h2 className="detail-panel-title">{event.title}</h2>
+                <span className={`detail-panel-type-badge ${event.type}`}>
+                  {event.type === 'banner' ? 'Banner' : 'Event'}
+                </span>
+              </div>
             </div>
-          ) : (
-            <>
-              {/* Banner placeholder */}
-              <div
-                className="detail-panel-banner"
-                style={{
-                  background: `linear-gradient(135deg, ${game?.color ?? '#888'}99, ${game?.color ?? '#888'}22)`,
-                }}
-              >
-                <div className="detail-panel-banner-overlay">
-                  <span className="detail-panel-game-name">{game?.name ?? event.game}</span>
-                  <h2 className="detail-panel-title">{event.title}</h2>
-                  <span className={`detail-panel-type-badge ${event.type}`}>
-                    {event.type === 'banner' ? 'Banner' : 'Event'}
-                  </span>
-                </div>
-              </div>
 
-              {/* Metadata */}
-              <div className="detail-panel-section">
-                <div className="detail-panel-meta-row">
-                  <span className="detail-panel-label">Starts</span>
-                  <span className="detail-panel-value">{formatDate(event.start)}</span>
-                </div>
-                <div className="detail-panel-meta-row">
-                  <span className="detail-panel-label">Ends</span>
-                  <span className="detail-panel-value">{formatDate(event.end)}</span>
-                </div>
-                <div className="detail-panel-remaining">
-                  {getDaysRemaining(event.end)}
-                </div>
+            {/* Metadata */}
+            <div className="detail-panel-section">
+              <div className="detail-panel-meta-row">
+                <span className="detail-panel-label">Starts</span>
+                <span className="detail-panel-value">{formatDate(event.start)}</span>
               </div>
+              <div className="detail-panel-meta-row">
+                <span className="detail-panel-label">Ends</span>
+                <span className="detail-panel-value">{formatDate(event.end)}</span>
+              </div>
+              <div className="detail-panel-remaining">
+                {getDaysRemaining(event.end)}
+              </div>
+            </div>
 
-              {/* Tags */}
-              <div className="detail-panel-section">
-                <h3 className="detail-panel-section-title">Community Tags</h3>
+            {/* Community Tags */}
+            <div className="detail-panel-section">
+              <h3 className="detail-panel-section-title">Community Tags</h3>
+              {votesLoading ? (
+                <p className="detail-panel-vote-hint">Loading...</p>
+              ) : (
                 <div className="detail-panel-tags">
                   {sortedTags.map(tag => {
-                    const data = STUB_VOTES[tag] ?? { votes: 0, percentage: 0 }
+                    const count = votes[tag] ?? 0
+                    const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
                     return (
                       <div key={tag} className="detail-panel-tag">
                         <div className="detail-panel-tag-header">
                           <span className="detail-panel-tag-label" title={TAG_INFO[tag]}>{tag}</span>
-                          <span className="detail-panel-tag-votes">{data.votes} votes</span>
+                          <span className="detail-panel-tag-pct">{pct}%</span>
                         </div>
                         <div className="detail-panel-tag-bar-bg">
                           <div
                             className="detail-panel-tag-bar-fill"
-                            style={{ width: `${data.percentage}%` }}
+                            style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="detail-panel-tag-pct">{data.percentage}%</span>
                       </div>
                     )
                   })}
                 </div>
-              </div>
+              )}
+            </div>
 
-              {/* Vote section */}
-              <div className="detail-panel-section">
-                <h3 className="detail-panel-section-title">Vote on Tags</h3>
+            {/* Vote section */}
+            <div className="detail-panel-section">
+              <h3 className="detail-panel-section-title">Vote on Tags</h3>
+              {!isAuthenticated && (
                 <p className="detail-panel-vote-hint">
                   Sign in to vote and help the community categorize events.
                 </p>
-                <div className="detail-panel-vote-tags">
-                  {ALL_TAGS.map(tag => (
+              )}
+              <div className="detail-panel-vote-tags">
+                {ALL_TAGS.map(tag => {
+                  const isVoted = userVotes.has(tag)
+                  const isPending = pendingTag === tag
+                  return (
                     <button
                       key={tag}
-                      className="detail-panel-vote-btn"
-                      onClick={() => console.log('Sign in to vote!')}
+                      className={`detail-panel-vote-btn ${isVoted ? 'voted' : ''}`}
+                      onClick={() => handleVote(tag)}
+                      disabled={isPending}
                       title={TAG_INFO[tag]}
                     >
                       {tag}
                     </button>
-                  ))}
-                </div>
+                  )
+                })}
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
