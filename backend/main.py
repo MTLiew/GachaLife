@@ -515,3 +515,34 @@ def debug_db():
         """))
         tables = [row[0] for row in result]
     return {"connected": connected, "tables": tables}
+
+@app.post("/auth/sync")
+def sync_user(
+    payload: dict = Security(verify_token),
+    db: Session = Depends(get_db)
+):
+    """Called after login to create or update user in our database."""
+    auth0_id = payload.get("sub")
+    email = payload.get("email")
+    name = payload.get("name")
+    
+    # Determine provider from the sub field (google-oauth2|xxx, discord|xxx)
+    provider = auth0_id.split("|")[0] if auth0_id else "unknown"
+
+    existing = db.query(models.User).filter(models.User.id == auth0_id).first()
+    
+    if not existing:
+        user = models.User(
+            id=auth0_id,
+            email=email,
+            display_name=name,
+            provider=provider,
+        )
+        db.add(user)
+        db.commit()
+        return {"status": "created", "user_id": auth0_id}
+    else:
+        existing.display_name = name
+        existing.email = email
+        db.commit()
+        return {"status": "updated", "user_id": auth0_id}

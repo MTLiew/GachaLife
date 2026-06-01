@@ -7,6 +7,7 @@ import type { GachaEvent } from './types'
 import { fetchEvents } from './api/events'
 import './index.css'
 import DetailPanel from './components/DetailPanel'
+import { useAuth0 } from '@auth0/auth0-react'
 
 function App() {
   const [selectedGames, setSelectedGames] = useState<string[]>(['genshin'])
@@ -15,10 +16,31 @@ function App() {
   const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('timeline')
   const [maintenanceGames, setMaintenanceGames] = useState<string[]>([])
   const [selectedEvent, setSelectedEvent] = useState<GachaEvent | null>(null)
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0()
 
   const handleViewToggle = () => {
     setViewMode(prev => prev === 'calendar' ? 'timeline' : 'calendar')
   }
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const syncUser = async () => {
+      try {
+        const token = await getAccessTokenSilently()
+        await fetch(`${import.meta.env.VITE_API_URL}/auth/sync`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      } catch (error) {
+        console.error('Failed to sync user:', error)
+      }
+    }
+
+    syncUser()
+  }, [isAuthenticated])
 
   useEffect(() => {
     let cancelled = false
