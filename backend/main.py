@@ -524,15 +524,22 @@ def sync_user(
     payload: dict = Security(verify_token),
     db: Session = Depends(get_db)
 ):
-    """Called after login to create or update user in our database."""
     auth0_id = payload.get("sub")
     email = payload.get("email")
-    name = payload.get("name")
     
-    # Determine provider from the sub field (google-oauth2|xxx, discord|xxx)
+    # Auth0 returns name differently per provider
+    name = (
+        payload.get("name") or
+        payload.get("nickname") or
+        payload.get("preferred_username") or
+        email
+    )
+    
     provider = auth0_id.split("|")[0] if auth0_id else "unknown"
 
     existing = db.query(models.User).filter(models.User.id == auth0_id).first()
+
+    print("Token payload:", payload)
     
     if not existing:
         user = models.User(
