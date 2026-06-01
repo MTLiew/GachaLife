@@ -54,3 +54,10 @@ def get_optional_user(credentials: HTTPAuthorizationCredentials = Security(HTTPB
         return verify_token(credentials)
     except HTTPException:
         return None
+    
+def get_userinfo(token: str) -> dict:
+    response = httpx.get(
+        f"https://{AUTH0_DOMAIN}/userinfo",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    return response.json()
