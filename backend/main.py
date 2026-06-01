@@ -19,9 +19,11 @@ from sqlalchemy.orm import Session
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import crud
-from auth import verify_token, get_optional_user
+from auth import verify_token, get_optional_user, get_userinfo
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import models
+
+security = HTTPBearer()
 
 def run_migrations():
     try:
