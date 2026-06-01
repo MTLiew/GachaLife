@@ -8,7 +8,7 @@ import os
 import models
 from html import unescape
 from datetime import datetime, timedelta
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Security
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
@@ -19,6 +19,9 @@ from sqlalchemy.orm import Session
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import crud
+from auth import verify_token, get_optional_user
+from fastapi.security import HTTPAuthorizationCredentials
+import models
 
 def run_migrations():
     try:
