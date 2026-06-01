@@ -20,7 +20,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import crud
 from auth import verify_token, get_optional_user
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import models
 
 def run_migrations():
@@ -521,25 +521,25 @@ def debug_db():
 
 @app.post("/auth/sync")
 def sync_user(
-    payload: dict = Security(verify_token),
+    credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db)
 ):
-    auth0_id = payload.get("sub")
-    email = payload.get("email")
+    from auth import verify_token, get_userinfo
+    payload = verify_token(credentials)
+    userinfo = get_userinfo(credentials.credentials)
     
-    # Auth0 returns name differently per provider
+    auth0_id = payload.get("sub")
+    email = userinfo.get("email")
     name = (
-        payload.get("name") or
-        payload.get("nickname") or
-        payload.get("preferred_username") or
+        userinfo.get("name") or
+        userinfo.get("nickname") or
+        userinfo.get("preferred_username") or
         email
     )
     
     provider = auth0_id.split("|")[0] if auth0_id else "unknown"
 
     existing = db.query(models.User).filter(models.User.id == auth0_id).first()
-
-    print("Token payload:", payload)
     
     if not existing:
         user = models.User(
