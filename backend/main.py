@@ -558,3 +558,63 @@ def sync_user(
         existing.email = email
         db.commit()
         return {"status": "updated", "user_id": auth0_id}
+    
+@app.get("/events/{event_id}/votes")
+def get_event_votes(
+    event_id: str,
+    credentials: HTTPAuthorizationCredentials = Security(HTTPBearer(auto_error=False)),
+    db: Session = Depends(get_db)
+):
+    votes = crud.get_votes_for_event(db, event_id)
+
+    user_votes = set()
+    if credentials:
+        payload = get_optional_user(credentials)
+        if payload:
+            user_id = payload.get("sub")
+            user_votes = crud.get_user_votes_for_event(db, user_id, event_id)
+
+    return {
+        "event_id": event_id,
+        "votes": votes,
+        "user_votes": list(user_votes),
+    }
+
+
+@app.post("/votes")
+def toggle_vote(
+    body: dict,
+    credentials: HTTPAuthorizationCredentials = Security(security),
+    db: Session = Depends(get_db)
+):
+    payload = verify_token(credentials)
+    user_id = payload.get("sub")
+
+    event_id = body.get("event_id")
+    tag = body.get("tag")
+
+    if not event_id or not tag:
+        raise HTTPException(status_code=400, detail="event_id and tag are required")
+
+    if tag not in crud.VALID_TAGS:
+        raise HTTPException(status_code=400, detail=f"Invalid tag: {tag}")
+
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    user_votes = crud.get_user_votes_for_event(db, user_id, event_id)
+    if tag in user_votes:
+        crud.remove_vote(db, user_id, event_id, tag)
+        action = "removed"
+    else:
+        crud.cast_vote(db, user_id, event_id, tag)
+        action = "added"
+
+    return {
+        "action": action,
+        "event_id": event_id,
+        "tag": tag,
+        "votes": crud.get_votes_for_event(db, event_id),
+        "user_votes": list(crud.get_user_votes_for_event(db, user_id, event_id)),
+    }

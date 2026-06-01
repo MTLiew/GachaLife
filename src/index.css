@@ -1258,6 +1258,12 @@ body {
   color: var(--accent);
 }
 
+.detail-panel-vote-btn.voted {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent)22;
+}
+
 .detail-panel-link {
   font-size: 0.8rem;
   color: var(--accent);
