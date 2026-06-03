@@ -50,16 +50,6 @@
   box-sizing: border-box;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: var(--bg-primary);
-  opacity: 0.85;
-  z-index: 0;
-  pointer-events: none;
-}
-
 body {
   background-image: url('/bg-test.jpg');
   background-size: cover;
