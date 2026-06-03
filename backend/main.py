@@ -564,7 +564,7 @@ def get_event_votes(
     event_id: str,
     credentials: HTTPAuthorizationCredentials = Security(HTTPBearer(auto_error=False)),
     db: Session = Depends(get_db)
-):
+    ):
     votes = crud.get_votes_for_event(db, event_id)
 
     user_votes = set()
@@ -578,6 +578,7 @@ def get_event_votes(
         "event_id": event_id,
         "votes": votes,
         "user_votes": list(user_votes),
+        "voter_count": crud.get_voter_count_for_event(db, event_id),
     }
 
 
@@ -617,4 +618,5 @@ def toggle_vote(
         "tag": tag,
         "votes": crud.get_votes_for_event(db, event_id),
         "user_votes": list(crud.get_user_votes_for_event(db, user_id, event_id)),
+        "voter_count": crud.get_voter_count_for_event(db, event_id),
     }

@@ -83,6 +83,13 @@ def get_votes_for_event(db: Session, event_id: str) -> dict[str, int]:
 
     return {row.tag: row.count for row in rows}
 
+def get_voter_count_for_event(db: Session, event_id: str) -> int:
+    """Returns the number of unique users who voted on this event."""
+    result = db.execute(
+        select(func.count(func.distinct(models.Vote.user_id)))
+        .where(models.Vote.event_id == event_id)
+    ).scalar()
+    return result or 0
 
 def get_user_votes_for_event(db: Session, user_id: str, event_id: str) -> set[str]:
     """Returns the set of tags this user has voted on for a given event."""
