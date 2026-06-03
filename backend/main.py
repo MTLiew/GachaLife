@@ -415,7 +415,17 @@ async def get_events(game_id: str, db: Session = Depends(get_db)):
             html = fetch_with_playwright(SOURCES[game_id])
             events = parse_events(html, game_id)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch events: {str(e)}")
+        # Scrape failed — try to serve stale data from the database
+        stale_events = db.query(models.Event).filter(models.Event.game == game_id).all()
+        if stale_events:
+            return {
+                "game_id": game_id,
+                "count": len(stale_events),
+                "events": crud.events_to_dict(stale_events),
+                "cached": True,
+                "stale": True,
+            }
+    raise HTTPException(status_code=502, detail=f"Failed to fetch events: {str(e)}")
 
     # Save to database
     crud.save_events_to_db(db, game_id, events)

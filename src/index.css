@@ -10,9 +10,12 @@
 }
 
 [data-theme='dark'] {
-  --bg-primary: #0f0f13;
+  /*--bg-primary: #0f0f13;
   --bg-secondary: #1a1a24;
-  --bg-card: #22223a;
+  --bg-card: #22223a;*/
+  --bg-primary: rgba(15, 15, 19, 0.85);
+  --bg-secondary: rgba(26, 26, 36, 0.80);
+  --bg-card: rgba(34, 34, 58, 0.75);
   --accent: #a855f7;
   --text-primary: #f0f0f0;
   --text-muted: #888;
@@ -47,8 +50,22 @@
   box-sizing: border-box;
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary);
+  opacity: 0.85;
+  z-index: 0;
+  pointer-events: none;
+}
+
 body {
-  background-color: var(--bg-primary);
+  background-image: url('/bg-test.jpg');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  background-color: var(--bg-primary); /* fallback if no image */
   color: var(--text-primary);
   font-family: 'Segoe UI', sans-serif;
   height: 100vh;
