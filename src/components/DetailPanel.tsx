@@ -59,6 +59,7 @@ function DetailPanel({ event }: Props) {
   const [userVotes, setUserVotes] = useState<Set<string>>(new Set())
   const [votesLoading, setVotesLoading] = useState(false)
   const [pendingTag, setPendingTag] = useState<string | null>(null)
+  const [voterCount, setVoterCount] = useState<number>(0)
 
   // Fetch votes whenever the selected event changes
   useEffect(() => {
@@ -85,6 +86,7 @@ function DetailPanel({ event }: Props) {
         const data = await res.json()
         setVotes(data.votes)
         setUserVotes(new Set(data.user_votes))
+        setVoterCount(data.voter_count ?? 0)
       } catch (err) {
         console.error('Failed to fetch votes:', err)
       } finally {
@@ -117,6 +119,7 @@ function DetailPanel({ event }: Props) {
       const data = await res.json()
       setVotes(data.votes)
       setUserVotes(new Set(data.user_votes))
+      setVoterCount(data.voter_count ?? 0)
     } catch (err) {
       console.error('Failed to cast vote:', err)
     } finally {
@@ -124,7 +127,7 @@ function DetailPanel({ event }: Props) {
     }
   }
 
-  const totalVotes = Object.values(votes).reduce((sum, n) => sum + n, 0)
+  const totalVoters = voterCount
 
   const sortedTags = [...ALL_TAGS].sort((a, b) => {
     const va = votes[a] ?? 0
@@ -181,7 +184,7 @@ function DetailPanel({ event }: Props) {
                 <div className="detail-panel-tags">
                   {sortedTags.map(tag => {
                     const count = votes[tag] ?? 0
-                    const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
+                    const pct = totalVoters > 0 ? Math.round((count / totalVoters) * 100) : 0
                     return (
                       <div key={tag} className="detail-panel-tag">
                         <div className="detail-panel-tag-header">
