@@ -101,12 +101,7 @@ function App() {
         maintenanceGames={maintenanceGames}
       />
       <div className="calendar-wrapper">
-        <Clock />
-          <div className="calendar-toolbar">
-            <button className="view-toggle-btn" onClick={handleViewToggle}>
-              {viewMode === 'calendar' ? 'Switch to Timeline' : 'Switch to Calendar'}
-            </button>
-          </div>
+        <Clock viewMode={viewMode} onViewToggle={handleViewToggle} />
         <div className="calendar-area">
           {isLoading && (
             <div className="loading-overlay">
