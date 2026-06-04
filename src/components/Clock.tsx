@@ -12,7 +12,12 @@ const TIMEZONES = [
   { label: 'Seoul (KST)', value: 'Asia/Seoul' },
 ]
 
-function Clock() {
+type Props = {
+  viewMode: 'calendar' | 'timeline'
+  onViewToggle: () => void
+}
+
+function Clock({ viewMode, onViewToggle }: Props) {
   const [currentTime, setCurrentTime] = useState<Date>(new Date())
   const [is12Hour, setIs12Hour] = useState<boolean>(true)
   const [timezone, setTimezone] = useState<string>(
@@ -71,6 +76,9 @@ function Clock() {
           onClick={() => setIs12Hour(prev => !prev)}
         >
           {is12Hour ? '12hr' : '24hr'}
+        </button>
+        <button className="clock-toggle" onClick={onViewToggle}>
+          {viewMode === 'calendar' ? 'Timeline' : 'Calendar'}
         </button>
       </div>
     </div>

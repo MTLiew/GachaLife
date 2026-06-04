@@ -9,6 +9,8 @@ import Changelog from './pages/Changelog'
 import Support from './pages/Support'
 import './index.css'
 import { Auth0Provider } from '@auth0/auth0-react'
+import About from './pages/About'
+import Privacy from './pages/Privacy'
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN
 const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID
@@ -19,8 +21,10 @@ function Root() {
     <Layout>
       <Routes>
         <Route path="/" element={<App />} />
+        <Route path="/about" element={<About />} />
         <Route path="/games" element={<Games />} />
         <Route path="/changelog" element={<Changelog />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/support" element={<Support />} />
       </Routes>
     </Layout>
