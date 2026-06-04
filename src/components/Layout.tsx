@@ -4,8 +4,10 @@ import { useAuth0 } from '@auth0/auth0-react'
 
 const NAV_LINKS = [
   { path: '/', label: 'Calendar' },
+  { path: '/about', label: 'About' },
   { path: '/games', label: 'Games' },
   { path: '/changelog', label: 'Changelog' },
+  { path: '/privacy', label: 'Privacy' },
   { path: '/support', label: 'Support' },
 ]
 
@@ -21,7 +23,7 @@ function Layout({ children }: Props) {
     <div className="app">
       <header className="app-header">
         <Link to="/" className="app-logo">
-          <h1>Gacha Calendar</h1>
+          <h1>Reverie</h1>
             </Link>
               <nav className="app-nav">
                 {NAV_LINKS.map(link => (

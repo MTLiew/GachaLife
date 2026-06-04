@@ -66,6 +66,7 @@ function DetailPanel({ event }: Props) {
     if (!event) {
       setVotes({})
       setUserVotes(new Set())
+      setVoterCount(0) 
       return
     }
 
