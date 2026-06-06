@@ -46,3 +46,15 @@ class Vote(Base):
 
     user = relationship("User", back_populates="votes")
     event = relationship("Event", back_populates="votes")
+
+class Completion(Base):
+    __tablename__ = "completions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    event_id = Column(String, ForeignKey("events.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "event_id", name="uq_completion"),
+    )

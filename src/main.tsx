@@ -31,7 +31,6 @@ function Root() {
   )
 }
 
-document.documentElement.setAttribute('data-theme', 'light')
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Auth0Provider

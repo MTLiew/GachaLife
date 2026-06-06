@@ -8,7 +8,7 @@ import os
 import models
 from html import unescape
 from datetime import datetime, timedelta
-from fastapi import FastAPI, HTTPException, Depends, Security
+from fastapi import FastAPI, HTTPException, Depends, Security, Request
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
@@ -22,6 +22,23 @@ import crud
 from auth import verify_token, get_optional_user, get_userinfo
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import models
+from collections import defaultdict
+from time import time
+import httpx
+
+_submission_log: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT_MAX = 3
+RATE_LIMIT_WINDOW = 20 * 60  # 20 minutes in seconds
+
+def check_rate_limit(ip: str) -> bool:
+    """Returns True if the IP is within the allowed rate limit."""
+    now = time()
+    window_start = now - RATE_LIMIT_WINDOW
+    _submission_log[ip] = [t for t in _submission_log[ip] if t > window_start]
+    if len(_submission_log[ip]) >= RATE_LIMIT_MAX:
+        return False
+    _submission_log[ip].append(now)
+    return True
 
 security = HTTPBearer()
 
@@ -630,3 +647,66 @@ def toggle_vote(
         "user_votes": list(crud.get_user_votes_for_event(db, user_id, event_id)),
         "voter_count": crud.get_voter_count_for_event(db, event_id),
     }
+
+@app.post("/support")
+async def submit_support(body: dict, request: Request):
+    ip = request.headers.get("x-forwarded-for", request.client.host).split(",")[0].strip()
+    
+    if not check_rate_limit(ip):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many submissions. Please wait 20 minutes before trying again."
+        )
+
+    required = ["subject", "message"]
+    for field in required:
+        if not body.get(field):
+            raise HTTPException(status_code=400, detail=f"{field} is required")
+
+    # Forward to EmailJS REST API
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.emailjs.com/api/v1.0/email/send",
+            json={
+                "service_id": os.getenv("EMAILJS_SERVICE_ID"),
+                "template_id": os.getenv("EMAILJS_TEMPLATE_ID"),
+                "user_id": os.getenv("EMAILJS_PUBLIC_KEY"),
+                "template_params": {
+                    "from_name": body.get("from_name", "Anonymous"),
+                    "from_email": body.get("from_email", "No email provided"),
+                    "subject": body["subject"],
+                    "message": body["message"],
+                }
+            }
+        )
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=502, detail="Failed to send message")
+
+    return {"status": "sent"}
+
+@app.get("/completions")
+def get_completions(
+    event_ids: str,
+    credentials: HTTPAuthorizationCredentials = Security(security),
+    db: Session = Depends(get_db)
+):
+    payload = verify_token(credentials)
+    user_id = payload.get("sub")
+    ids = event_ids.split(",")
+    completed = crud.get_completions_for_user(db, user_id, ids)
+    return {"completed": list(completed)}
+
+@app.post("/completions/toggle")
+def toggle_completion(
+    body: dict,
+    credentials: HTTPAuthorizationCredentials = Security(security),
+    db: Session = Depends(get_db)
+):
+    payload = verify_token(credentials)
+    user_id = payload.get("sub")
+    event_id = body.get("event_id")
+    if not event_id:
+        raise HTTPException(status_code=400, detail="event_id is required")
+    now_complete = crud.toggle_completion(db, user_id, event_id)
+    return {"event_id": event_id, "completed": now_complete}

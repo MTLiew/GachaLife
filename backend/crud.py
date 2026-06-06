@@ -126,3 +126,29 @@ def remove_vote(db: Session, user_id: str, event_id: str, tag: str) -> None:
         models.Vote.tag == tag,
     ).delete()
     db.commit()
+
+def get_completions_for_user(db: Session, user_id: str, event_ids: list[str]) -> set[str]:
+    """Returns set of event_ids the user has marked complete."""
+    rows = db.execute(
+        select(models.Completion.event_id)
+        .where(models.Completion.user_id == user_id)
+        .where(models.Completion.event_id.in_(event_ids))
+    ).scalars().all()
+    return set(rows)
+
+def toggle_completion(db: Session, user_id: str, event_id: str) -> bool:
+    """Toggles completion. Returns True if now complete, False if removed."""
+    existing = db.execute(
+        select(models.Completion)
+        .where(models.Completion.user_id == user_id)
+        .where(models.Completion.event_id == event_id)
+    ).scalar_one_or_none()
+
+    if existing:
+        db.delete(existing)
+        db.commit()
+        return False
+    else:
+        db.add(models.Completion(user_id=user_id, event_id=event_id))
+        db.commit()
+        return True

@@ -6,6 +6,8 @@ type Props = {
   events: GachaEvent[]
   selectedGames: string[]
   onEventClick: (event: GachaEvent) => void
+  completedEvents: Set<string>
+  onToggleComplete: (eventId: string) => void
 }
 
 const LABEL_WIDTH = 150
@@ -17,7 +19,7 @@ const TOTAL_WEEKS = 9
 const TOTAL_DAYS = TOTAL_WEEKS * 7
 const PAST_DAYS = 28
 
-function GachaTimeline({ events, selectedGames, onEventClick }: Props) {
+function GachaTimeline({ events, selectedGames, onEventClick, completedEvents, onToggleComplete }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const headerScrollRef = useRef<HTMLDivElement>(null)
 
@@ -168,18 +170,25 @@ function GachaTimeline({ events, selectedGames, onEventClick }: Props) {
                         return (
                             <div
                               key={event.id}
-                              className={`timeline-event-bar ${startsBeforeRange ? 'clipped-left' : ''}`}
+                              className={`timeline-event-bar ${startsBeforeRange ? 'clipped-left' : ''} ${completedEvents.has(event.id) ? 'completed' : ''}`}
                               style={{
-                                  left: startX,
-                                  width,
-                                  top,
-                                  height: ROW_HEIGHT - 6,
-                                  backgroundColor: GAMES.find(g => g.id === event.game)?.color ?? '#888',
+                                left: startX,
+                                width,
+                                top,
+                                height: ROW_HEIGHT - 6,
+                                backgroundColor: GAMES.find(g => g.id === event.game)?.color ?? '#888',
                               }}
                               onClick={() => onEventClick(event)}
+                              onContextMenu={e => {
+                                e.preventDefault()
+                                onToggleComplete(event.id)
+                              }}
                               title={event.title}
                             >
                               <span className="timeline-event-label">{event.title}</span>
+                              {completedEvents.has(event.id) && (
+                                <span className="timeline-event-check">✓</span>
+                              )}
                             </div>
                         )
                         })}
