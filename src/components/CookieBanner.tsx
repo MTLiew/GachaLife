@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 
 function CookieBanner() {
   const [visible, setVisible] = useState(false)
@@ -20,7 +21,7 @@ function CookieBanner() {
       <p className="cookie-text">
         Reverie uses cookies for authentication and to save your preferences.
         By continuing to use the site, you agree to our{' '}
-        <a href="/privacy" className="cookie-link">Privacy Policy</a>.
+        <Link to="/privacy" className="cookie-link">Privacy Policy</Link>
       </p>
       <button className="cookie-btn" onClick={accept}>
         Got it
