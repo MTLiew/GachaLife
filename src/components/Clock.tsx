@@ -17,7 +17,7 @@ type Props = {
   onViewToggle: () => void
 }
 
-function Clock({ viewMode, onViewToggle }: Props) {
+function Clock() {
   const [currentTime, setCurrentTime] = useState<Date>(new Date())
   const [is12Hour, setIs12Hour] = useState<boolean>(true)
   const [timezone, setTimezone] = useState<string>(
@@ -76,9 +76,6 @@ function Clock({ viewMode, onViewToggle }: Props) {
           onClick={() => setIs12Hour(prev => !prev)}
         >
           {is12Hour ? '12hr' : '24hr'}
-        </button>
-        <button className="clock-toggle" onClick={onViewToggle}>
-          {viewMode === 'calendar' ? 'Timeline' : 'Calendar'}
         </button>
       </div>
     </div>

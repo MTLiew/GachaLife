@@ -1,18 +1,15 @@
 @import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 [data-theme='light'] {
-  --bg-primary: #f5f5fa;
-  --bg-secondary: #ffffff;
-  --bg-card: #ededf5;
+  --bg-primary: rgba(245, 245, 250, 0.88);
+  --bg-secondary: rgba(255, 255, 255, 0.82);
+  --bg-card: rgba(237, 237, 245, 0.85);
   --accent: #a855f7;
   --text-primary: #1a1a2e;
   --text-muted: #888;
 }
 
 [data-theme='dark'] {
-  /*--bg-primary: #0f0f13;
-  --bg-secondary: #1a1a24;
-  --bg-card: #22223a;*/
   --bg-primary: rgba(15, 15, 19, 0.85);
   --bg-secondary: rgba(26, 26, 36, 0.80);
   --bg-card: rgba(34, 34, 58, 0.75);
@@ -22,18 +19,18 @@
 }
 
 [data-theme='sakura'] {
-  --bg-primary: #fff0f5;
-  --bg-secondary: #fff8fb;
-  --bg-card: #fce4ec;
+  --bg-primary: rgba(255, 240, 245, 0.88);
+  --bg-secondary: rgba(255, 248, 251, 0.82);
+  --bg-card: rgba(252, 228, 236, 0.85);
   --accent: #e91e8c;
   --text-primary: #3d0026;
   --text-muted: #b07090;
 }
 
 [data-theme='cosmic'] {
-  --bg-primary: #0d0520;
-  --bg-secondary: #130a2e;
-  --bg-card: #1e1245;
+  --bg-primary: rgba(13, 5, 32, 0.85);
+  --bg-secondary: rgba(19, 10, 46, 0.80);
+  --bg-card: rgba(30, 18, 69, 0.75);
   --accent: #38bdf8;
   --text-primary: #e8e0ff;
   --text-muted: #7060a0;
@@ -54,8 +51,8 @@ body {
   background-image: url('/bg-test.jpg');
   background-size: cover;
   background-attachment: fixed;
-  background-position: center;
-  background-color: var(--bg-primary); /* fallback if no image */
+  background-position: center top;
+  background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: 'Segoe UI', sans-serif;
   height: 100vh;
@@ -252,13 +249,13 @@ body {
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   z-index: 200;
-  min-width: 140px;
+  min-width: 100px;
 }
 
 .theme-dropdown-item {
   display: block;
   width: 100%;
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: none;
   border: none;
   color: var(--text-primary);
