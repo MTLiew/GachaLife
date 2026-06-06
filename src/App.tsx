@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
-import GachaCalendar from './components/GachaCalendar'
 import Clock from './components/Clock'
 import GachaTimeline from './components/GachaTimeline'
 import type { GachaEvent } from './types'

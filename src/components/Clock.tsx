@@ -12,11 +12,6 @@ const TIMEZONES = [
   { label: 'Seoul (KST)', value: 'Asia/Seoul' },
 ]
 
-type Props = {
-  viewMode: 'calendar' | 'timeline'
-  onViewToggle: () => void
-}
-
 function Clock() {
   const [currentTime, setCurrentTime] = useState<Date>(new Date())
   const [is12Hour, setIs12Hour] = useState<boolean>(true)
