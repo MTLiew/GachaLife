@@ -13,14 +13,14 @@ function App() {
   const [selectedGames, setSelectedGames] = useState<string[]>(['genshin'])
   const [events, setEvents] = useState<GachaEvent[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('timeline')
+  //const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('timeline')
   const [maintenanceGames, setMaintenanceGames] = useState<string[]>([])
   const [selectedEvent, setSelectedEvent] = useState<GachaEvent | null>(null)
   const { isAuthenticated, getAccessTokenSilently } = useAuth0()
 
-  const handleViewToggle = () => {
+  /*const handleViewToggle = () => {
     setViewMode(prev => prev === 'calendar' ? 'timeline' : 'calendar')
-  }
+  }*/
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -101,7 +101,7 @@ function App() {
         maintenanceGames={maintenanceGames}
       />
       <div className="calendar-wrapper">
-        <Clock viewMode={viewMode} onViewToggle={handleViewToggle} />
+        <Clock />
         <div className="calendar-area">
           {isLoading && (
             <div className="loading-overlay">
@@ -109,21 +109,16 @@ function App() {
               <p className="loading-text">Fetching events...</p>
             </div>
           )}
-          {viewMode === 'calendar'
-            ? <GachaCalendar events={events} selectedGames={selectedGames} />
-            : (
-              <div className="timeline-page">
-                <div className="timeline-side" />
-                  <GachaTimeline
-                    events={events}
-                    selectedGames={selectedGames}
-                    onEventClick={setSelectedEvent}
-                  />
-                  <div className="timeline-side" />
-                <DetailPanel event={selectedEvent} />
-              </div>
-            )
-          }
+          <div className="timeline-page">
+            <div className="timeline-side" />
+            <GachaTimeline
+              events={events}
+              selectedGames={selectedGames}
+              onEventClick={setSelectedEvent}
+            />
+            <div className="timeline-side" />
+            <DetailPanel event={selectedEvent} />
+          </div>
         </div>
       </div>
     </div>
