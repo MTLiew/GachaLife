@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import ThemeDropdown from './ThemeDropdown'
 import { useAuth0 } from '@auth0/auth0-react'
+import CookieBanner from './CookieBanner'
 
 const NAV_LINKS = [
   { path: '/', label: 'Calendar' },
@@ -24,9 +25,9 @@ function Layout({ children }: Props) {
       <header className="app-header">
         <Link to="/" className="app-logo">
           <h1>Reverie</h1>
-            </Link>
-              <nav className="app-nav">
-                {NAV_LINKS.map(link => (
+        </Link>
+        <nav className="app-nav">
+          {NAV_LINKS.map(link => (
             <Link
               key={link.path}
               to={link.path}
@@ -37,7 +38,15 @@ function Layout({ children }: Props) {
           ))}
         </nav>
         <ThemeDropdown />
-                <div className="auth-controls">
+        <div className="auth-controls">
+          <a
+            href="https://ko-fi.com/reveriegacha"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="kofi-btn"
+          >
+            Support on Ko-Fi
+          </a>
           {isAuthenticated ? (
             <div className="auth-user">
               {user?.picture && (
@@ -65,9 +74,10 @@ function Layout({ children }: Props) {
           )}
         </div>
       </header>
-        <main className="app-main">
-          {children}
-        </main>
+      <main className="app-main">
+        {children}
+      </main>
+      <CookieBanner />
     </div>
   )
 }
