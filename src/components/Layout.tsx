@@ -39,14 +39,6 @@ function Layout({ children }: Props) {
         </nav>
         <ThemeDropdown />
         <div className="auth-controls">
-          <a
-            href="https://ko-fi.com/reveriegacha"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="kofi-btn"
-          >
-            Support on Ko-Fi
-          </a>
           {isAuthenticated ? (
             <div className="auth-user">
               {user?.picture && (
