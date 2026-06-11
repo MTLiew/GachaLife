@@ -31,7 +31,8 @@ const EMPTY_FORM = {
 }
 
 function Admin() {
-  const { getAccessTokenSilently } = useAuth0()
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0()
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
   const [events, setEvents] = useState<Event[]>([])
   const [scraperStatus, setScraperStatus] = useState<ScraperStatus>({})
   const [form, setForm] = useState({ ...EMPTY_FORM })
@@ -53,6 +54,20 @@ function Admin() {
     setMessage({ text, type })
     setTimeout(() => setMessage(null), 3000)
   }
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!isAuthenticated) { setIsAdmin(false); return }
+      try {
+        const headers = await authHeaders()
+        const res = await fetch(`${API}/admin/scraper-status`, { headers })
+        setIsAdmin(res.ok)
+      } catch {
+        setIsAdmin(false)
+      }
+    }
+    checkAdmin()
+  }, [isAuthenticated, authHeaders])
 
   const loadEvents = useCallback(async () => {
     setLoading(true)
@@ -83,32 +98,29 @@ function Admin() {
   }, [authHeaders])
 
   useEffect(() => {
-    loadEvents()
-  }, [loadEvents])
+    if (isAdmin) loadEvents()
+  }, [loadEvents, isAdmin])
 
   useEffect(() => {
-    loadScraperStatus()
-  }, [loadScraperStatus])
+    if (isAdmin) loadScraperStatus()
+  }, [loadScraperStatus, isAdmin])
 
   const handleSubmit = async () => {
     if (!form.title || !form.start || !form.end) {
       showMessage('Title, start, and end are required', 'error')
       return
     }
-
     try {
       const headers = await authHeaders()
       const method = editingId ? 'PUT' : 'POST'
       const url = editingId
         ? `${API}/admin/events/${editingId}`
         : `${API}/admin/events`
-
       const res = await fetch(url, {
         method,
         headers,
         body: JSON.stringify(form),
       })
-
       if (!res.ok) throw new Error('Failed to save event')
       showMessage(editingId ? 'Event updated' : 'Event created', 'success')
       setForm({ ...EMPTY_FORM })
@@ -204,24 +216,32 @@ function Admin() {
     return `${Math.floor(hours / 24)}d ago`
   }
 
+  if (isAdmin === null) return (
+    <div className="page-container">
+      <p style={{ padding: '40px', color: 'var(--text-muted)' }}>Checking access...</p>
+    </div>
+  )
+
+  if (!isAdmin) return (
+    <div className="page-container">
+      <p style={{ padding: '40px', color: 'var(--text-muted)' }}>Access denied.</p>
+    </div>
+  )
+
   return (
     <div className="page-container">
       <div className="admin-wrapper">
-
-        {/* Header */}
         <div className="support-header">
           <h1>Admin Panel</h1>
           <p>Manage events, trigger scrapes, and monitor scraper health.</p>
         </div>
 
-        {/* Message toast */}
         {message && (
           <div className={`admin-message ${message.type}`}>
             {message.text}
           </div>
         )}
 
-        {/* Event Form */}
         <div className="changelog-entry">
           <div className="changelog-entry-header">
             <span className="changelog-version">
@@ -267,6 +287,7 @@ function Admin() {
                 >
                   <option value="event">Event</option>
                   <option value="banner">Banner</option>
+                  <option value="maintenance">Maintenance</option>
                 </select>
               </div>
               <div className="form-group">
@@ -305,7 +326,6 @@ function Admin() {
           </div>
         </div>
 
-        {/* Scraper Status */}
         <div className="changelog-entry">
           <div className="changelog-entry-header">
             <span className="changelog-version">Scraper Status</span>
@@ -350,7 +370,6 @@ function Admin() {
           </div>
         </div>
 
-        {/* Event List */}
         <div className="changelog-entry">
           <div className="changelog-entry-header">
             <span className="changelog-version">
@@ -404,7 +423,6 @@ function Admin() {
             })}
           </div>
         </div>
-
       </div>
     </div>
   )
