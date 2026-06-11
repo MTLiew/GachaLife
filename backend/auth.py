@@ -61,3 +61,12 @@ def get_userinfo(token: str) -> dict:
         headers={"Authorization": f"Bearer {token}"}
     )
     return response.json()
+
+def require_admin(credentials: HTTPAuthorizationCredentials = Security(security)):
+    """Verifies the token and checks if the user is an admin."""
+    payload = verify_token(credentials)
+    user_id = payload.get("sub")
+    admin_id = os.getenv("ADMIN_USER_ID")
+    if not admin_id or user_id != admin_id:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return payload
