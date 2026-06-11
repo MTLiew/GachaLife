@@ -55,8 +55,6 @@ function RippleOverlay({ onDone }: { onDone: () => void }) {
         document.body.appendChild(svg)
 
         const root = document.getElementById('root')!
-        const cx = window.innerWidth / 2
-        const cy = window.innerHeight / 2
         root.style.filter = 'url(#pixi-ripple-filter)'
 
         const startTime = performance.now()
