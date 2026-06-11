@@ -37,6 +37,14 @@ function Layout({ children }: Props) {
             </Link>
           ))}
         </nav>
+        <a href='https://ko-fi.com/reveriegacha' target='_blank' rel='noopener noreferrer'>
+            <img 
+              height='36' 
+              style={{ border: '0px', height: '36px' }} 
+              src='https://storage.ko-fi.com/cdn/kofi5.png?v=3' 
+              alt='Support me on Ko-Fi' 
+            />
+          </a>
         <ThemeDropdown />
         <div className="auth-controls">
           {isAuthenticated ? (

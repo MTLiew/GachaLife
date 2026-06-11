@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import crud
-from auth import verify_token, get_optional_user, get_userinfo
+from auth import verify_token, get_optional_user, get_userinfo, require_admin
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import models
 from collections import defaultdict
