@@ -62,7 +62,6 @@ function RippleOverlay({ onDone }: { onDone: () => void }) {
         const startTime = performance.now()
         const peakAt = DURATION * 0.35
         const maxScale = 8
-        const maxRadius = Math.sqrt(cx * cx + cy * cy) * 1.5
 
         app.ticker.add(() => {
             const elapsed = performance.now() - startTime

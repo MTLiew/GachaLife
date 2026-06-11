@@ -11,7 +11,6 @@ import './index.css'
 import { Auth0Provider } from '@auth0/auth0-react'
 import About from './pages/About'
 import Privacy from './pages/Privacy'
-import PageTransition from './components/PageTransition'
 import Admin from './pages/Admin'
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN
