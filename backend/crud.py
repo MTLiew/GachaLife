@@ -152,3 +152,70 @@ def toggle_completion(db: Session, user_id: str, event_id: str) -> bool:
         db.add(models.Completion(user_id=user_id, event_id=event_id))
         db.commit()
         return True
+
+def get_all_events(db: Session, game_id: str | None = None) -> list[models.Event]:
+    """Returns all events, optionally filtered by game."""
+    query = select(models.Event).order_by(models.Event.game, models.Event.start)
+    if game_id:
+        query = query.where(models.Event.game == game_id)
+    return list(db.execute(query).scalars().all())
+
+
+def create_event(db: Session, event_data: dict) -> models.Event:
+    """Creates a new event."""
+    import uuid
+    event = models.Event(
+        id=event_data.get("id") or f"{event_data['game']}-manual-{uuid.uuid4().hex[:8]}",
+        title=event_data["title"],
+        game=event_data["game"],
+        start=datetime.fromisoformat(event_data["start"]),
+        end=datetime.fromisoformat(event_data["end"]),
+        url=event_data.get("url", ""),
+        type=event_data.get("type", "event"),
+        last_scraped=datetime.utcnow(),
+    )
+    db.add(event)
+    db.commit()
+    db.refresh(event)
+    return event
+
+
+def update_event(db: Session, event_id: str, event_data: dict) -> models.Event | None:
+    """Updates an existing event."""
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        return None
+    if "title" in event_data:
+        event.title = event_data["title"]
+    if "game" in event_data:
+        event.game = event_data["game"]
+    if "start" in event_data:
+        event.start = datetime.fromisoformat(event_data["start"])
+    if "end" in event_data:
+        event.end = datetime.fromisoformat(event_data["end"])
+    if "url" in event_data:
+        event.url = event_data["url"]
+    if "type" in event_data:
+        event.type = event_data["type"]
+    event.last_scraped = datetime.utcnow()
+    db.commit()
+    db.refresh(event)
+    return event
+
+
+def delete_event(db: Session, event_id: str) -> bool:
+    """Deletes an event. Returns True if deleted, False if not found."""
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        return False
+    db.delete(event)
+    db.commit()
+    return True
+
+
+def delete_events_by_game(db: Session, game_id: str) -> int:
+    """Deletes all events for a game. Returns count deleted."""
+    count = db.query(models.Event).filter(models.Event.game == game_id).count()
+    db.query(models.Event).filter(models.Event.game == game_id).delete()
+    db.commit()
+    return count
