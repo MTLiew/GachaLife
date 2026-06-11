@@ -31,7 +31,7 @@ const EMPTY_FORM = {
 }
 
 function Admin() {
-  const { isAuthenticated, getAccessTokenSilently } = useAuth0()
+  const {isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0()
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
   const [events, setEvents] = useState<Event[]>([])
   const [scraperStatus, setScraperStatus] = useState<ScraperStatus>({})
@@ -56,18 +56,19 @@ function Admin() {
   }
 
   useEffect(() => {
-    const checkAdmin = async () => {
-      if (!isAuthenticated) { setIsAdmin(false); return }
-      try {
-        const headers = await authHeaders()
-        const res = await fetch(`${API}/admin/scraper-status`, { headers })
-        setIsAdmin(res.ok)
-      } catch {
-        setIsAdmin(false)
-      }
+  const checkAdmin = async () => {
+    if (isLoading) return
+    if (!isAuthenticated) { setIsAdmin(false); return }
+    try {
+      const headers = await authHeaders()
+      const res = await fetch(`${API}/admin/scraper-status`, { headers })
+      setIsAdmin(res.ok)
+    } catch {
+      setIsAdmin(false)
+    }
     }
     checkAdmin()
-  }, [isAuthenticated, authHeaders])
+  }, [isAuthenticated, isLoading, authHeaders])
 
   const loadEvents = useCallback(async () => {
     setLoading(true)
@@ -216,7 +217,7 @@ function Admin() {
     return `${Math.floor(hours / 24)}d ago`
   }
 
-  if (isAdmin === null) return (
+  if (isLoading || isAdmin === null) return (
     <div className="page-container">
       <p style={{ padding: '40px', color: 'var(--text-muted)' }}>Checking access...</p>
     </div>
