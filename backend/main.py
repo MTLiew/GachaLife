@@ -710,3 +710,107 @@ def toggle_completion(
         raise HTTPException(status_code=400, detail="event_id is required")
     now_complete = crud.toggle_completion(db, user_id, event_id)
     return {"event_id": event_id, "completed": now_complete}
+
+# ── Admin endpoints ───────────────────────────────────────────────────────────
+
+@app.get("/admin/events")
+def admin_get_events(
+    game_id: str | None = None,
+    payload: dict = Security(require_admin),
+    db: Session = Depends(get_db)
+):
+    events = crud.get_all_events(db, game_id)
+    return {"events": crud.events_to_dict(events)}
+
+
+@app.post("/admin/events")
+def admin_create_event(
+    body: dict,
+    payload: dict = Security(require_admin),
+    db: Session = Depends(get_db)
+):
+    required = ["title", "game", "start", "end", "type"]
+    for field in required:
+        if not body.get(field):
+            raise HTTPException(status_code=400, detail=f"{field} is required")
+    event = crud.create_event(db, body)
+    return crud.events_to_dict([event])[0]
+
+
+@app.put("/admin/events/{event_id}")
+def admin_update_event(
+    event_id: str,
+    body: dict,
+    payload: dict = Security(require_admin),
+    db: Session = Depends(get_db)
+):
+    event = crud.update_event(db, event_id, body)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return crud.events_to_dict([event])[0]
+
+
+@app.delete("/admin/events/{event_id}")
+def admin_delete_event(
+    event_id: str,
+    payload: dict = Security(require_admin),
+    db: Session = Depends(get_db)
+):
+    deleted = crud.delete_event(db, event_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return {"status": "deleted", "event_id": event_id}
+
+
+@app.delete("/admin/events/game/{game_id}")
+def admin_delete_game_events(
+    game_id: str,
+    payload: dict = Security(require_admin),
+    db: Session = Depends(get_db)
+):
+    count = crud.delete_events_by_game(db, game_id)
+    return {"status": "deleted", "count": count, "game_id": game_id}
+
+
+@app.get("/admin/scraper-status")
+def admin_scraper_status(
+    payload: dict = Security(require_admin),
+    db: Session = Depends(get_db)
+):
+    from sqlalchemy import select, func
+    status = {}
+    for game_id in SOURCES:
+        sample = db.execute(
+            select(models.Event)
+            .where(models.Event.game == game_id)
+            .limit(1)
+        ).scalar_one_or_none()
+        count = db.execute(
+            select(func.count()).where(models.Event.game == game_id)
+        ).scalar()
+        status[game_id] = {
+            "last_updated": sample.last_scraped.isoformat() if sample else None,
+            "event_count": count,
+        }
+    return status
+
+
+@app.post("/admin/scrape/{game_id}")
+def admin_trigger_scrape(
+    game_id: str,
+    payload: dict = Security(require_admin),
+    db: Session = Depends(get_db)
+):
+    if game_id not in SOURCES:
+        raise HTTPException(status_code=404, detail="Game not supported")
+    try:
+        if game_id == "hsr":
+            raw = evaluate_with_playwright(SOURCES[game_id], HSR_JS)
+            events = parse_hsr(raw, game_id)
+        else:
+            html = fetch_with_playwright(SOURCES[game_id])
+            events = parse_events(html, game_id)
+        crud.save_events_to_db(db, game_id, events)
+        return {"status": "success", "event_count": len(events)}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
