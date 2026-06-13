@@ -177,6 +177,9 @@ function GachaTimeline({ events, selectedGames, onEventClick, completedEvents, o
                                 top,
                                 height: ROW_HEIGHT - 6,
                                 backgroundColor: GAMES.find(g => g.id === event.game)?.color ?? '#888',
+                                backgroundImage: event.image_url ? `url(${event.image_url})` : undefined,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
                               }}
                               onClick={() => onEventClick(event)}
                               onContextMenu={e => {

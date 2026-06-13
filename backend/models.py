@@ -25,6 +25,7 @@ class Event(Base):
     end = Column(DateTime, nullable=False)
     url = Column(String, nullable=True)
     type = Column(String, nullable=False)
+    image_url = Column(String, nullable=True)
     last_scraped = Column(DateTime, default=datetime.utcnow)
 
     votes = relationship("Vote", back_populates="event")
