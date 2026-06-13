@@ -15,6 +15,7 @@ export async function fetchEvents(gameId: string): Promise<GachaEvent[]> {
     end: new Date(e.end),
     type: e.type,
     url: e.url,
+    image_url: e.image_url,
   }))
 }
 

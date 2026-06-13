@@ -7,6 +7,7 @@ export type GachaEvent = {
   type: 'banner' | 'event' | 'maintenance'
   tags?: string[]
   url?: string
+  image_url?: string
 }
 
 export type Game = {

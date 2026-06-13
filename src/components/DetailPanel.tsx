@@ -149,7 +149,14 @@ function DetailPanel({ event }: Props) {
             <div
               className="detail-panel-banner"
               style={{
-                background: `linear-gradient(135deg, ${game?.color ?? '#888'}99, ${game?.color ?? '#888'}22)`,
+                background: event.image_url
+                  ? undefined
+                  : `linear-gradient(135deg, ${game?.color ?? '#888'}99, ${game?.color ?? '#888'}22)`,
+                backgroundImage: event.image_url
+                  ? `url(${event.image_url})`
+                  : undefined,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center top',
               }}
             >
               <div className="detail-panel-banner-overlay">

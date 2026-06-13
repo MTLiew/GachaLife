@@ -172,6 +172,7 @@ def create_event(db: Session, event_data: dict) -> models.Event:
         end=datetime.fromisoformat(event_data["end"]),
         url=event_data.get("url", ""),
         type=event_data.get("type", "event"),
+        image_url=event_data.get("image_url"), 
         last_scraped=datetime.utcnow(),
     )
     db.add(event)
@@ -197,6 +198,8 @@ def update_event(db: Session, event_id: str, event_data: dict) -> models.Event |
         event.url = event_data["url"]
     if "type" in event_data:
         event.type = event_data["type"]
+    if "image_url" in event_data:  # ADD THIS
+        event.image_url = event_data["image_url"]
     event.last_scraped = datetime.utcnow()
     db.commit()
     db.refresh(event)
@@ -219,3 +222,18 @@ def delete_events_by_game(db: Session, game_id: str) -> int:
     db.query(models.Event).filter(models.Event.game == game_id).delete()
     db.commit()
     return count
+
+def events_to_dict(events: list[models.Event]) -> list[dict]:
+    return [
+        {
+            "id": e.id,
+            "title": e.title,
+            "game": e.game,
+            "start": e.start.isoformat(),
+            "end": e.end.isoformat(),
+            "url": e.url,
+            "type": e.type,
+            "image_url": e.image_url,
+        }
+        for e in events
+    ]

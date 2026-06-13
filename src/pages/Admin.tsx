@@ -12,6 +12,7 @@ type Event = {
   end: string
   url: string
   type: string
+  image_url: string
 }
 
 type ScraperStatus = {
@@ -28,6 +29,7 @@ const EMPTY_FORM = {
   start: '',
   end: '',
   url: '',
+  image_url: '',
 }
 
 function Admin() {
@@ -41,6 +43,9 @@ function Admin() {
   const [loading, setLoading] = useState(false)
   const [scraping, setScraping] = useState<string | null>(null)
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>('')
+  const [uploading, setUploading] = useState(false)
 
   const authHeaders = useCallback(async () => {
     const token = await getAccessTokenSilently()
@@ -53,6 +58,34 @@ function Admin() {
   const showMessage = (text: string, type: 'success' | 'error') => {
     setMessage({ text, type })
     setTimeout(() => setMessage(null), 3000)
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  const uploadToCloudinary = async (): Promise<string | null> => {
+    if (!imageFile) return form.image_url || null
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', imageFile)
+      formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        { method: 'POST', body: formData }
+      )
+      const data = await res.json()
+      return data.secure_url
+    } catch {
+      showMessage('Image upload failed', 'error')
+      return null
+    } finally {
+      setUploading(false)
+    }
   }
 
   useEffect(() => {
@@ -107,30 +140,33 @@ function Admin() {
   }, [loadScraperStatus, isAdmin])
 
   const handleSubmit = async () => {
-    if (!form.title || !form.start || !form.end) {
-      showMessage('Title, start, and end are required', 'error')
-      return
-    }
-    try {
-      const headers = await authHeaders()
-      const method = editingId ? 'PUT' : 'POST'
-      const url = editingId
-        ? `${API}/admin/events/${editingId}`
-        : `${API}/admin/events`
-      const res = await fetch(url, {
-        method,
-        headers,
-        body: JSON.stringify(form),
-      })
-      if (!res.ok) throw new Error('Failed to save event')
-      showMessage(editingId ? 'Event updated' : 'Event created', 'success')
-      setForm({ ...EMPTY_FORM })
-      setEditingId(null)
-      loadEvents()
-    } catch {
-      showMessage('Failed to save event', 'error')
-    }
+  if (!form.title || !form.start || !form.end) {
+    showMessage('Title, start, and end are required', 'error')
+    return
   }
+  try {
+    const image_url = await uploadToCloudinary()
+    const headers = await authHeaders()
+    const method = editingId ? 'PUT' : 'POST'
+    const url = editingId
+      ? `${API}/admin/events/${editingId}`
+      : `${API}/admin/events`
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: JSON.stringify({ ...form, image_url }),
+    })
+    if (!res.ok) throw new Error('Failed to save event')
+    showMessage(editingId ? 'Event updated' : 'Event created', 'success')
+    setForm({ ...EMPTY_FORM })
+    setEditingId(null)
+    setImageFile(null)
+    setImagePreview('')
+    loadEvents()
+  } catch {
+    showMessage('Failed to save event', 'error')
+  }
+}
 
   const handleEdit = (event: Event) => {
     setEditingId(event.id)
@@ -141,7 +177,10 @@ function Admin() {
       start: event.start.slice(0, 16),
       end: event.end.slice(0, 16),
       url: event.url ?? '',
+      image_url: event.image_url ?? '',
     })
+    setImagePreview(event.image_url ?? '')
+    setImageFile(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -200,6 +239,8 @@ function Admin() {
   const cancelEdit = () => {
     setEditingId(null)
     setForm({ ...EMPTY_FORM })
+    setImageFile(null)
+    setImagePreview('')
   }
 
   const formatDate = (iso: string) =>
@@ -299,6 +340,27 @@ function Admin() {
                   onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
                   placeholder="https://..."
                 />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Event Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="form-input"
+                  onChange={handleImageChange}
+                />
+                {imagePreview && (
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={{
+                      marginTop: '8px',
+                      maxHeight: '120px',
+                      borderRadius: '6px',
+                      objectFit: 'cover',
+                    }}
+                  />
+                )}
               </div>
             </div>
             <div className="admin-form-row">
