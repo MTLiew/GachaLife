@@ -383,45 +383,21 @@ async def get_events(game_id: str, db: Session = Depends(get_db)):
     if game_id not in SOURCES:
         raise HTTPException(status_code=404, detail=f"Game '{game_id}' not supported")
 
-    # Check database first
-    db_events = crud.get_events_from_db(db, game_id)
-    if db_events is not None:
+    events = db.query(models.Event).filter(models.Event.game == game_id).all()
+    
+    if not events:
         return {
             "game_id": game_id,
-            "count": len(db_events),
-            "events": crud.events_to_dict(db_events),
-            "cached": True
+            "count": 0,
+            "events": [],
+            "cached": False
         }
-
-    # Scrape fresh data
-    try:
-        if game_id == "hsr":
-            raw = evaluate_with_playwright(SOURCES[game_id], HSR_JS)
-            events = parse_hsr(raw, game_id)
-        else:
-            html = fetch_with_playwright(SOURCES[game_id])
-            events = parse_events(html, game_id)
-    except Exception as e:
-        # Scrape failed — try to serve stale data from the database
-        stale_events = db.query(models.Event).filter(models.Event.game == game_id).all()
-        if stale_events:
-            return {
-                "game_id": game_id,
-                "count": len(stale_events),
-                "events": crud.events_to_dict(stale_events),
-                "cached": True,
-                "stale": True,
-            }
-    raise HTTPException(status_code=502, detail=f"Failed to fetch events: {str(e)}")
-
-    # Save to database
-    crud.save_events_to_db(db, game_id, events)
 
     return {
         "game_id": game_id,
         "count": len(events),
-        "events": events,
-        "cached": False
+        "events": crud.events_to_dict(events),
+        "cached": True
     }
 
 @app.get("/debug/html/{game_id}")
